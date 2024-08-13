@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2 align="center">Le tue proprieta</h2>
+{% if user.proprietario %}
+{% else %}
+    <h2 align="center">{{ user.username }}, ancora non sei proprietario.<br/>Aggiungi una proprieta' per diventarlo.</h2>
+{% endif %}
+    <br/>
+    {% for p in user.proprietario.proprieta %}
+        <p>{{ p.citta}}, {{ p.via }} {{ p.num_civico }}</p>
+    {% endfor %}
+    <br/>
+    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Aggiungi una proprieta</a>
+{% endblock %}

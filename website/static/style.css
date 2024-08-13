@@ -1,0 +1,39 @@
+.navbar{
+    background: linear-gradient(to left, #fd7dbd, #f1a739, #d4560d, #da1103);
+}
+
+.navbar, .navbar-bar, .nav-link{
+    color: #fff
+}
+
+.btn-primary{
+    background: #000000;
+    color: #fff;
+    border-color: #fff;
+    border-width: 1px solid transparent;
+    border-radius: 12px;
+}
+
+.btn-primary:hover{
+    background: #ffffff !important;
+    color: #000000;
+    border-color: #000000;
+    border-width: 1px solid transparent;
+    border-radius: 12px;
+}
+
+btn-primary:active{
+    background: #a5a2a2 !important;
+    color: #000000;
+    border-color: #000000;
+    border-width: 1px solid transparent;
+    border-radius: 12px;
+}
+
+btn-primary:visited {
+    background: #ffffff !important;
+    color: #000000;
+    border-color: #000000;
+    border-width: 1px solid transparent;
+    border-radius: 12px;
+}
