@@ -34,6 +34,9 @@
         </div>
        
         {% if user.is_authenticated %}
+        <div class="mr-2" style="color: black;">
+            Sei loggato come {{ user.first_name + user.last_name}}
+        </div>
         <a class="btn btn-primary" id="logout" href="/logout">Log out</a>
         {% else %}
         <a class="btn btn-primary mr-1" id="login" href="/sign-up">Sign Up</a>
@@ -80,6 +83,7 @@
         crossorigin="anonymous"></script>
 
     <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
+    
 </body>
 
 </html>

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dettagli proprieta{% endblock %}
+
+{% block content %}
+    <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ p.citta }}, {{ p.via }} {{ p.num_civico }}</h2>
+    <br/>
+    <div class="container">
+        <div class="row justify-content-center">
+            {% for amenita in p.amenita %}
+            <div class="btn btn-primary" style="background-color: black;">
+                <span>{{amenita.nome}}</span>
+                <span><i class="bi bi-x-circle" onclick="removeAmenity('{{amenita.nome}}', {{p.id}})"></i></span>
+            </div>
+            {% endfor %}
+            <button class="badge btn-primary mr-2 p-2" style="background: black;" data-toggle="modal" data-target="#amenity_modal"><i class="bi bi-plus-circle-fill"></i></button>
+        </div>
+    </div>
+    <br>
+    <div class="modal fade" id="amenity_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLongTitle">Modifica amenita</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    <label for="elimina_amenita">Elimina</label>
+                    <select class="form-select" id="elimina_amenita" aria-label="Default select example">
+                        <option selected>Open this select menu</option>
+                        {% for a in p.amenita %}
+                            <option value="{{a.nome}}">{{ a.nome }}</option>
+                        {% endfor %}
+                      </select>
+                </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    <form method="POST">
+        <div class="p-2 form-group">
+            <textarea type="text" class="form-control" id="descrizione" name="descrizione" placeholder="{{ p.descrizione }}" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Aggiorna descrizione</button>
+    </form>
+    <div class="container">
+        <div class="row justify-content-center">
+        {% for c in p.camere %}
+            <div class="col-5 p-2 d-flex align-items-stretch">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Camera {{ c.ordinale }}</h5>
+                        <div class="container">
+                            <div class="row">
+                            {% for l in c.letti %}
+                                <div class="col-4 p-1 d-flex align-items-stretch">
+                                    <div class="card" style="width: 48rem;">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Letto {{ l.ordinale }}</h5>
+                                            <small>{{ l.tipo}}</small>
+                                            <br>
+                                            <button type="button" class="btn btn-primary" onclick="removeBed({{l.id}})"><i class="bi bi-trash-fill"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+                            </div>
+                        </div>
+                        <br>
+                        <button type="button" class="btn btn-primary" onclick="removeRoom({{c.ordinale}}, {{c.proprietaid}})">Elimina camera</i></button>
+                        <button type="button" class="btn btn-primary" onclick="addBed({{c.ordinale}}, {{c.proprietaid}})">Aggiungi letto</i></button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        <button class="btn btn-primary btn-lg btn-block" onclick="addRoom({{p.id}})">Aggiungi camera</i></button>
+        </div>
+    </div>
+    
+{% endblock %}

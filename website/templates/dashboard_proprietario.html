@@ -8,9 +8,24 @@
     <h2 align="center">{{ user.username }}, ancora non sei proprietario.<br/>Aggiungi una proprieta' per diventarlo.</h2>
 {% endif %}
     <br/>
-    {% for p in user.proprietario.proprieta %}
-        <p>{{ p.citta}}, {{ p.via }} {{ p.num_civico }}</p>
-    {% endfor %}
+    <div class="container">
+        <div class="row">
+        {% for p in user.proprietario.proprieta %}
+            <div class="col-4 p-2">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ p.citta }}, {{ p.via }} {{ p.num_civico }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Card subtitle</h6>
+                        <p class="card-text">{{p.descrizione}}</p>
+                        <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=p.id) }}" class="card-link">Dettagli</a>
+                        <a href="#" class="card-link">Elimina</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+    
     <br/>
     <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Aggiungi una proprieta</a>
 {% endblock %}
