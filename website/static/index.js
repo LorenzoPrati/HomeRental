@@ -53,3 +53,15 @@ function removeAmenity(nome, proprietaid) {
     });
 }
 
+function addAmenity(proprietaid) {
+    nome = document.getElementById('elimina_amenita').value
+    fetch('/addAmenity', {
+        method: 'POST',
+        body: JSON.stringify(
+            {nome: nome, proprietaid: proprietaid}
+        )
+    }).then((_res) => {
+        window.location.reload()
+    });
+}
+

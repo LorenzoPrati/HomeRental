@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, url_for, flash, redirect,
 from flask_login import login_user, login_required, logout_user, current_user
 from .models import Utente, Proprieta, Proprietario, Camera, Letto, Tipo_Letto, Amenita, proprieta_amenita
 from . import db
+from sqlalchemy import delete, text
 
 views = Blueprint('views', __name__)
 
@@ -109,9 +110,24 @@ def remove_amenity():
     nome = obj['nome']
     proprietaid = obj['proprietaid']
     p = Proprieta.query.get(proprietaid)
+    
     for a in p.amenita:
         if a.nome == nome:
-            db.session.delete(a)
+            p.amenita.remove(a)
+            db.session.commit()
+    return jsonify({})
+
+@views.route('/addAmenity', methods=['POST'])
+def add_amenity():
+    obj = json.loads(request.data)
+    nome = obj['nome']
+    proprietaid = obj['proprietaid']
     
+    #p = Proprieta.query.get(proprietaid)
+    #a = Amenita.query.get(nome)
+    #p.amenita.append(a)
+
+    st = proprieta_amenita.insert().values(proprieta_id=proprietaid, amenita_id=nome)
+    db.session.execute(st)
     db.session.commit()
     return jsonify({})

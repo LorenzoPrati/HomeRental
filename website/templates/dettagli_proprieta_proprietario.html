@@ -7,38 +7,39 @@
     <div class="container">
         <div class="row justify-content-center">
             {% for amenita in p.amenita %}
-            <div class="btn btn-primary" style="background-color: black;">
+            <button class="btn btn-primary" style="background-color: black;" onclick="removeAmenity('{{amenita.nome}}', {{p.id}})">
                 <span>{{amenita.nome}}</span>
-                <span><i class="bi bi-x-circle" onclick="removeAmenity('{{amenita.nome}}', {{p.id}})"></i></span>
-            </div>
+                <span><i class="bi bi-x-circle"></i></span>
+            </button>
             {% endfor %}
-            <button class="badge btn-primary mr-2 p-2" style="background: black;" data-toggle="modal" data-target="#amenity_modal"><i class="bi bi-plus-circle-fill"></i></button>
+        </div>
+        <div class="row justify-content-center p-2">
+            <button class="badge btn-primary mr-2 p-2" style="background: black;" data-toggle="modal" data-target="#amenity_modal">Aggiungi amenita</i></button>
         </div>
     </div>
-    <br>
     <div class="modal fade" id="amenity_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title" id="exampleModalLongTitle">Modifica amenita</h5>
+              <h5 class="modal-title" id="exampleModalLongTitle">Aggiungi amenita</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
               </button>
             </div>
             <div class="modal-body">
-                <form method="post">
-                    <label for="elimina_amenita">Elimina</label>
+                <form>
+                    <label for="elimina_amenita">Aggiungi</label>
                     <select class="form-select" id="elimina_amenita" aria-label="Default select example">
                         <option selected>Open this select menu</option>
-                        {% for a in p.amenita %}
-                            <option value="{{a.nome}}">{{ a.nome }}</option>
+                        {% for a in Amenita.query.all() %}
+                            <option value='{{a.nome}}'>{{ a.nome }}</option>
                         {% endfor %}
                       </select>
                 </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
+              <button type="submit" class="btn btn-primary" onclick="addAmenity({{p.id}})">Save changes</button>
             </div>
           </div>
         </div>
