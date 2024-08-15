@@ -1,15 +1,28 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Utente, Proprieta, Proprietario, Camera, Letto, Tipo_Letto, Amenita, proprieta_amenita
+from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno
 from . import db
 from sqlalchemy import delete, text
 
 views = Blueprint('views', __name__)
 
-@views.route('/')
+@views.route('/', methods=['GET', 'POST'])
 @login_required
 def home():
-    return render_template("home.html", user=current_user)
+    if request.method == 'POST':
+        citta = request.form.get('citta')
+        check_in = request.form.get('check_in')
+        check_out = request.form.get('check_out')
+        num_ospiti = request.form.get('num_ospiti')
+
+        
+
+
+        soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo_totale=100, utenteid=current_user.id)
+        db.session.add(soggiorno)
+        db.session.commit()
+        flash('Soggiorno aggiunto.', category='success')
+    return render_template("home.html", user=current_user, Citta=Citta)
 
 @views.route('/dashboard_proprietario', methods=['GET', 'POST'])
 @login_required
@@ -28,7 +41,7 @@ def aggiungi_proprieta():
         nuova_proprieta = Proprieta(
             via=request.form.get('via'),
             num_civico = request.form.get('numerocivico'),
-            citta = request.form.get('citta'),
+            cittaid = request.form.get('citta'),
             descrizione = request.form.get('descrizione'),
             proprietarioid = p.id
         )
@@ -49,22 +62,22 @@ def dettagli_proprieta_proprietario():
     id = request.args.get('id')
     p = db.session.query(Proprieta).filter_by(id=id).one()
     session['proprietaid'] = p.id
-    return render_template("dettagli_proprieta_proprietario.html", user=current_user, p=p, en=Tipo_Letto, Amenita=Amenita)
+    return render_template("dettagli_proprieta_proprietario.html", user=current_user, p=p, Amenita=Amenita)
 
-@views.route('/removeBed', methods=['POST'])
-def remove_bed():
-    bed = json.loads(request.data)
-    bedid = bed['id']
-    bed = Letto.query.get(bedid)
-    ordinale = bed.ordinale
-    ordinaleCamera = bed.ordinaleCamera
-    proprietaid = bed.proprietaid
-    letti_da_modificare = Letto.query.filter_by(ordinaleCamera=ordinaleCamera, proprietaid=proprietaid).where(Letto.ordinale > ordinale).all()
-    for l in letti_da_modificare:
-        l.ordinale = l.ordinale - 1
-    db.session.delete(bed)
-    db.session.commit()
-    return jsonify({})
+#@views.route('/removeBed', methods=['POST'])
+#def remove_bed():
+    #bed = json.loads(request.data)
+    #bedid = bed['id']
+    #bed = Letto.query.get(bedid)
+    #ordinale = bed.ordinale
+    #ordinaleCamera = bed.ordinaleCamera
+    #proprietaid = bed.proprietaid
+    #letti_da_modificare = Letto.query.filter_by(ordinaleCamera=ordinaleCamera, proprietaid=proprietaid).where(Letto.ordinale > ordinale).all()
+    #for l in letti_da_modificare:
+        #l.ordinale = l.ordinale - 1
+    #db.session.delete(bed)
+    #db.session.commit()
+    #return jsonify({})
 
 @views.route('/removeRoom', methods=['POST'])
 def remove_room():
@@ -79,30 +92,33 @@ def remove_room():
 
 @views.route('/addRoom', methods=['POST'])
 def add_room():
-    p = json.loads(request.data)
-    proprietaid = p['proprietaid']
+    flash('Ciao', category='success')
+    obj = json.loads(request.data)
+    proprietaid = obj['proprietaid']
+    prezzo = obj['prezzo']
+    num_ospiti = obj['num_ospiti']
 
     p = Proprieta.query.get(proprietaid)
     ordinale = p.getNumCamere() + 1
-    nuova_camera = Camera(ordinale=ordinale, proprietaid=proprietaid, proprieta=p)
+    nuova_camera = Camera(ordinale=ordinale, proprietaid=proprietaid, proprieta=p, prezzo=prezzo, num_ospiti=num_ospiti)
 
     db.session.add(nuova_camera)
     db.session.commit()
     return jsonify({})
 
-@views.route('/addBed', methods=['POST'])
-def add_bed():
-    c = json.loads(request.data)
-    ordinalecamera = c['ordinalecamera']
-    proprietaid = c['proprietaid']
+#@views.route('/addBed', methods=['POST'])
+#def add_bed():
+    #c = json.loads(request.data)
+    #ordinalecamera = c['ordinalecamera']
+    #proprietaid = c['proprietaid']
 
-    c = Camera.query.get((ordinalecamera, proprietaid))
-    ordinale = c.getNumLetti() + 1
-    nuovo_letto = Letto(ordinale=ordinale, ordinaleCamera=ordinalecamera, proprietaid=proprietaid, camera=c, tipo=Tipo_Letto.MATRIMONIALE)
+    #c = Camera.query.get((ordinalecamera, proprietaid))
+    #ordinale = c.getNumLetti() + 1
+    #nuovo_letto = Letto(ordinale=ordinale, ordinaleCamera=ordinalecamera, proprietaid=proprietaid, camera=c, tipo=Tipo_Letto.MATRIMONIALE)
 
-    db.session.add(nuovo_letto)
-    db.session.commit()
-    return jsonify({})
+    #db.session.add(nuovo_letto)
+    #db.session.commit()
+    #return jsonify({})
 
 @views.route('/removeAmenity', methods=['POST'])
 def remove_amenity():
@@ -122,12 +138,18 @@ def add_amenity():
     obj = json.loads(request.data)
     nome = obj['nome']
     proprietaid = obj['proprietaid']
-    
-    #p = Proprieta.query.get(proprietaid)
-    #a = Amenita.query.get(nome)
-    #p.amenita.append(a)
 
     st = proprieta_amenita.insert().values(proprieta_id=proprietaid, amenita_id=nome)
     db.session.execute(st)
+    db.session.commit()
+    return jsonify({})
+
+@views.route('/rimuovi_proprieta', methods=['POST'])
+def rimuovi_proprieta():
+    obj = json.loads(request.data)
+    proprietaid = obj['proprietaid']
+
+    p = Proprieta.query.get(proprietaid)
+    db.session.delete(p)
     db.session.commit()
     return jsonify({})

@@ -1,14 +1,3 @@
-function removeBed(bedid) {
-    fetch('/removeBed', {
-        method: 'POST',
-        body: JSON.stringify(
-            {id: bedid}
-        )
-    }).then((_res) => {
-        window.location.reload()
-    });
-}
-
 function removeRoom(ordinale, proprietaid) {
     fetch('/removeRoom', {
         method: 'POST',
@@ -21,26 +10,19 @@ function removeRoom(ordinale, proprietaid) {
 }
 
 function addRoom(proprietaid) {
+    num_ospiti = document.getElementById('num_ospiti').value
+    prezzo = document.getElementById('prezzo').value
     fetch('/addRoom', {
         method: 'POST',
         body: JSON.stringify(
-            {proprietaid: proprietaid}
+            {proprietaid: proprietaid, num_ospiti: num_ospiti, prezzo: prezzo}
         )
     }).then((_res) => {
         window.location.reload()
     });
 }
 
-function addBed(ordinalecamera, proprietaid) {
-    fetch('/addBed', {
-        method: 'POST',
-        body: JSON.stringify(
-            {ordinalecamera: ordinalecamera, proprietaid: proprietaid}
-        )
-    }).then((_res) => {
-        window.location.reload()
-    });
-}
+
 
 function removeAmenity(nome, proprietaid) {
     fetch('/removeAmenity', {
@@ -64,4 +46,17 @@ function addAmenity(proprietaid) {
         window.location.reload()
     });
 }
+
+function rimuovi_proprieta(proprietaid) {
+    fetch('/rimuovi_proprieta', {
+        method: 'POST',
+        body: JSON.stringify(
+            {proprietaid: proprietaid}
+        )
+    }).then((_res) => {
+        window.location.reload()
+    });
+}
+
+
 

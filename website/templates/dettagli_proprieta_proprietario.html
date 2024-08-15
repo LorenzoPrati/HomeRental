@@ -56,33 +56,53 @@
             <div class="col-5 p-2 d-flex align-items-stretch">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">Camera {{ c.ordinale }}</h5>
-                        <div class="container">
-                            <div class="row">
-                            {% for l in c.letti %}
-                                <div class="col-4 p-1 d-flex align-items-stretch">
-                                    <div class="card" style="width: 48rem;">
-                                        <div class="card-body">
-                                            <h5 class="card-title">Letto {{ l.ordinale }}</h5>
-                                            <small>{{ l.tipo}}</small>
-                                            <br>
-                                            <button type="button" class="btn btn-primary" onclick="removeBed({{l.id}})"><i class="bi bi-trash-fill"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-
-                            </div>
+                        <div class="d-flex flex-row p-2">
+                            <h5 class="card-title">Camera {{ c.ordinale }}<i class="bi bi-dot"></i></h5>
+                            <h5>
+                                <i class="bi bi-person-fill"></i>
+                                {{c.num_ospiti}}
+                                <i class="bi bi-dot"></i>
+                            </h5>
+                            <h5>
+                                <i class="bi bi-currency-euro"></i>
+                                {{c.prezzo}}
+                            </h5>
                         </div>
+                        
+                        
                         <br>
                         <button type="button" class="btn btn-primary" onclick="removeRoom({{c.ordinale}}, {{c.proprietaid}})">Elimina camera</i></button>
-                        <button type="button" class="btn btn-primary" onclick="addBed({{c.ordinale}}, {{c.proprietaid}})">Aggiungi letto</i></button>
+                        
                     </div>
                 </div>
             </div>
         {% endfor %}
-        <button class="btn btn-primary btn-lg btn-block" onclick="addRoom({{p.id}})">Aggiungi camera</i></button>
-        </div>
+        <button class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#new_room_modal">Aggiungi camera</i></button>
+        <div class="modal fade" id="new_room_modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">Aggiungi camera</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <label for="num_ospiti">Quante persone potranno soggiornare nella nuova camera?</label>
+                        <input type="text" class="form-control" id="num_ospiti">
+                        <label for="prezzo">Quale sara' il prezzo a notte?</label>
+                        <input type="text" class="form-control" id="prezzo">
+                    </form>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                  <button type="submit" class="btn btn-primary" onclick="addRoom({{p.id}})">Save changes</button>
+                </div>
+              </div>
+            </div>
+          </div>
+    </div>
     </div>
     
 {% endblock %}
