@@ -14,7 +14,7 @@
             <div class="col-4 p-2">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ p.citta }}, {{ p.via }} {{ p.num_civico }}</h5>
+                        <h5 class="card-title">{{ p.citta.nome }}, {{ p.via }} {{ p.num_civico }}</h5>
                         <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=p.id) }}" class="btn btn-primary">Modifica</a>
                         <button class="btn btn-primary" onclick="rimuovi_proprieta({{p.id}})">Elimina</button>
                     </div>

@@ -108,6 +108,8 @@ class Soggiorno(db.Model):
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
     camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni")
 
+    
+
 
 
     

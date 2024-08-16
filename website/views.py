@@ -3,6 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno
 from . import db
 from sqlalchemy import delete, text
+import datetime
 
 views = Blueprint('views', __name__)
 
@@ -14,15 +15,52 @@ def home():
         check_in = request.form.get('check_in')
         check_out = request.form.get('check_out')
         num_ospiti = request.form.get('num_ospiti')
+        return redirect(url_for('views.ricerca', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti))
 
-        
+    return render_template("home.html", user=current_user, Citta=Citta)
 
+@views.route('/ricerca', methods=['GET', 'POST'])
+@login_required
+def ricerca():
+    citta = request.args.get('citta')
+    check_in = request.args.get('check_in')
+    check_out = request.args.get('check_out')
+    num_ospiti = request.args.get('num_ospiti')
+    lista_proprieta = Proprieta.query.filter(Proprieta.cittaid == citta).all()
+    return render_template("ricerca.html", user=current_user, citta=citta, lista_proprieta=lista_proprieta,check_in=check_in, check_out=check_out, num_ospiti=num_ospiti)
 
-        soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo_totale=100, utenteid=current_user.id)
+@views.route('/prenotazioni')
+@login_required
+def prenotazioni():
+    return render_template("prenotazioni.html", user=current_user)
+
+@views.route('/proprieta', methods=['GET', 'POST'])
+@login_required
+def proprieta():
+    citta = request.args.get('citta')
+    check_in = request.args.get('check_in')
+    check_out = request.args.get('check_out')
+    num_ospiti = request.args.get('num_ospiti')
+    proprieta_id = request.args.get('proprieta_id')
+    proprieta = Proprieta.query.get(proprieta_id)
+    if request.method == 'POST':
+        camere_id = []
+        camere = []
+        #for camera in proprieta.camere:
+            #id = camera.id
+            #if request.form.get(str(id)):
+                #camere_id.append(id)
+                #flash('Eccoci', category='success')
+        lista_camere_prenotate = request.form.getlist('camere_prenotate')
+        for id in lista_camere_prenotate:
+            camera = Camera.query.get(id)
+            camere.append(camera)
+        soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo_totale=0, utenteid=current_user.id, utente=current_user, camere=camere)
         db.session.add(soggiorno)
         db.session.commit()
-        flash('Soggiorno aggiunto.', category='success')
-    return render_template("home.html", user=current_user, Citta=Citta)
+    
+    
+    return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta)
 
 @views.route('/dashboard_proprietario', methods=['GET', 'POST'])
 @login_required
@@ -81,26 +119,24 @@ def dettagli_proprieta_proprietario():
 
 @views.route('/removeRoom', methods=['POST'])
 def remove_room():
-    room = json.loads(request.data)
-    ordinale = room['ordinale']
-    proprietaid = room['proprietaid']
+    obj = json.loads(request.data)
+    camera_id = obj['camera_id']
 
-    room = Camera.query.get((ordinale, proprietaid))
+    room = Camera.query.get(camera_id)
     db.session.delete(room)
     db.session.commit()
     return jsonify({})
 
 @views.route('/addRoom', methods=['POST'])
 def add_room():
-    flash('Ciao', category='success')
     obj = json.loads(request.data)
-    proprietaid = obj['proprietaid']
-    prezzo = obj['prezzo']
-    num_ospiti = obj['num_ospiti']
+    proprieta_id = obj['proprieta_id']
+    prezzo = int(obj['prezzo'])
+    num_ospiti = int(obj['num_ospiti'])
 
-    p = Proprieta.query.get(proprietaid)
-    ordinale = p.getNumCamere() + 1
-    nuova_camera = Camera(ordinale=ordinale, proprietaid=proprietaid, proprieta=p, prezzo=prezzo, num_ospiti=num_ospiti)
+    proprieta = Proprieta.query.get(proprieta_id)
+    ordinale = len(proprieta.camere) + 1
+    nuova_camera = Camera(proprietaid=proprieta_id, ordinale=ordinale, prezzo=prezzo, num_ospiti=num_ospiti, proprieta=proprieta, soggiorni=[])
 
     db.session.add(nuova_camera)
     db.session.commit()

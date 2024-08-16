@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Prenotazioni{% endblock %}
+
+{% block content %}
+    <h2 align="center">Le tue prenotazioni</i></h2>
+    <div class="container">
+        {% for soggiorno in user.soggiorni%}
+            <p> da {{soggiorno.check_in}} a {{soggiorno.check_out}}</p>
+            {% for camera in soggiorno.camere%}
+                <p>{{camera.ordinale}} - {{camera.prezzo}}</p>
+            {% endfor %}
+        {% endfor %}
+    </div>
+{% endblock %}

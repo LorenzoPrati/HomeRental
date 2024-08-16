@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Dettagli proprieta{% endblock %}
+
+{% block content %}
+    <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{ proprieta.via }} {{ proprieta.num_civico }}</h2>
+    <div class="container">
+        <div class="row d-flex justify-content-center">
+            <h4>di {{proprieta.proprietario.utente.username}}</h4>
+        </div>
+        <div class="row justify-content-center">
+            {% for amenita in proprieta.amenita %}
+            <button class="btn btn-primary" style="background-color: black;" onclick="removeAmenity('{{amenita.nome}}', {{proprieta.id}})">
+                <span>{{amenita.nome}}</span>
+                <span><i class="bi bi-x-circle"></i></span>
+            </button>
+            {% endfor %}
+        </div>
+        
+    </div>
+    
+    <div class="row">
+        <p>{{proprieta.descrizione}}</p>
+    </div>
+    
+    <div class="container">
+        <form method="POST">
+            {% for camera in proprieta.camere %}
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" value="{{camera.id}}" id="{{camera.id}}" name="camere_prenotate">
+                <label for="{{camera.id}}">Camera {{camera.ordinale}}</label>
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Prenota</button>
+        </form>
+    </div>
+    
+{% endblock %}

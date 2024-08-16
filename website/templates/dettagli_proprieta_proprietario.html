@@ -71,7 +71,7 @@
                         
                         
                         <br>
-                        <button type="button" class="btn btn-primary" onclick="removeRoom({{c.ordinale}}, {{c.proprietaid}})">Elimina camera</i></button>
+                        <button type="button" class="btn btn-primary" onclick="removeRoom({{c.id}})">Elimina camera</i></button>
                         
                     </div>
                 </div>
@@ -88,16 +88,14 @@
                   </button>
                 </div>
                 <div class="modal-body">
-                    <form>
-                        <label for="num_ospiti">Quante persone potranno soggiornare nella nuova camera?</label>
-                        <input type="text" class="form-control" id="num_ospiti">
-                        <label for="prezzo">Quale sara' il prezzo a notte?</label>
-                        <input type="text" class="form-control" id="prezzo">
-                    </form>
+                      <label for="num_ospiti">Quante persone potranno soggiornare nella nuova camera?</label>
+                      <input type="number" class="form-control" id="num_ospiti" name="=num_ospiti">
+                      <label for="prezzo">Quale sara' il prezzo a notte?</label>
+                      <input type="number" class="form-control" id="prezzo" name="prezzo">
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary" onclick="addRoom({{p.id}})">Save changes</button>
+                  <button type="submit" class="btn btn-primary" onclick="aggiungi_camera({{p.id}})">Save changes</button>
                 </div>
               </div>
             </div>

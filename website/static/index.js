@@ -1,21 +1,21 @@
-function removeRoom(ordinale, proprietaid) {
+function removeRoom(camera_id) {
     fetch('/removeRoom', {
         method: 'POST',
         body: JSON.stringify(
-            {ordinale: ordinale, proprietaid: proprietaid}
+            {camera_id: camera_id}
         )
     }).then((_res) => {
         window.location.reload()
     });
 }
 
-function addRoom(proprietaid) {
+function aggiungi_camera(proprieta_id) {
     num_ospiti = document.getElementById('num_ospiti').value
     prezzo = document.getElementById('prezzo').value
     fetch('/addRoom', {
         method: 'POST',
         body: JSON.stringify(
-            {proprietaid: proprietaid, num_ospiti: num_ospiti, prezzo: prezzo}
+            {proprieta_id: proprieta_id, num_ospiti: num_ospiti, prezzo: prezzo}
         )
     }).then((_res) => {
         window.location.reload()
