@@ -7,21 +7,17 @@
     <table class="table">
         <thead>
             <tr>
-                <th scope="col">Luogo</th>
+                <th scope="col">Utente</th>
                 <th scope="col">Check In</th>
                 <th scope="col">Check Out</th>
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
-                <th scope="col">Pagamento</th>
-                <th scope="col">Valutazione</th>
             </tr>
         </thead>
         <tbody>
-            {% for soggiorno in user.soggiorni %}
+            {% for soggiorno in soggiorni %}
             <tr>
-                <td>
-                    <a href="" class="btn btn-primary">{{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.via}} {{soggiorno.camere[0].proprieta.num_civico}}</a>
-                </td>
+                <td>{{soggiorno.utente}}</td>
                 <td>{{soggiorno.check_in}}</td>
                 <td>{{soggiorno.check_out}}</td>
                 <td>{{soggiorno.num_ospiti}}</td>
@@ -29,14 +25,6 @@
                     {% for camera in soggiorno.camere %}
                     {{camera.ordinale}}, 
                     {% endfor %}
-                </td>
-                <td>
-                    <a href="" class=" btn-btn-primary">Vedi dettagli</a>
-                </td>
-                <td>
-                    {% if soggiorno.check_in < now %}
-                    <a href="" class=" btn-btn-primary">Recensisci</a>
-                    {% endif %}
                 </td>
             </tr>
             {% endfor %}

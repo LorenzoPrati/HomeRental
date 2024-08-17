@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno
+from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno, occupazioni
 from . import db
 from sqlalchemy import delete, text
 import datetime
@@ -32,7 +32,7 @@ def ricerca():
 @views.route('/prenotazioni')
 @login_required
 def prenotazioni():
-    return render_template("prenotazioni.html", user=current_user)
+    return render_template("prenotazioni.html", user=current_user, now=datetime.datetime.now())
 
 @views.route('/proprieta', methods=['GET', 'POST'])
 @login_required
@@ -67,6 +67,14 @@ def proprieta():
 def dashboard_proprietario():
     
     return render_template("dashboard_proprietario.html", user=current_user)
+
+@views.route('/gestisci_prenotazioni', methods=['GET', 'POST'])
+@login_required
+def gestisci_prenotazioni():
+    proprieta_id = request.args.get('id')
+    #proprieta = Proprieta.query.get(proprieta_id)
+    soggiorni = db.session.query(Soggiorno).join(occupazioni).join(Camera).filter(Camera.proprietaid==proprieta_id).distinct()
+    return render_template("gestisci_prenotazioni.html", user=current_user, soggiorni=soggiorni)
 
 @views.route('/aggiungi_proprieta', methods=['GET', 'POST'])
 @login_required

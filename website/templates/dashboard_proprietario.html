@@ -17,6 +17,7 @@
                         <h5 class="card-title">{{ p.citta.nome }}, {{ p.via }} {{ p.num_civico }}</h5>
                         <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=p.id) }}" class="btn btn-primary">Modifica</a>
                         <button class="btn btn-primary" onclick="rimuovi_proprieta({{p.id}})">Elimina</button>
+                        <a href="{{ url_for('views.gestisci_prenotazioni', id=p.id) }}" class="btn btn-primary">Gestisci prenotazioni</a>
                     </div>
                 </div>
             </div>
