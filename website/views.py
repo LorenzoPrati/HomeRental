@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, url_for, flash, redirect,
 from flask_login import login_user, login_required, logout_user, current_user
 from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno, occupazioni, Recensione
 from . import db
-from sqlalchemy import delete, text
+from sqlalchemy import delete, text, or_, and_, func
 import datetime
 
 views = Blueprint('views', __name__)
@@ -26,7 +26,11 @@ def ricerca():
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
     num_ospiti = request.args.get('num_ospiti')
-    lista_proprieta = Proprieta.query.filter(Proprieta.cittaid == citta).all()
+    
+    #lista_proprieta = Proprieta.query.filter(Proprieta.cittaid == citta).all()
+    id_camere_libere = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(or_(Soggiorno.id == None, and_(check_in>Soggiorno.check_out, check_out<Soggiorno.check_in))).subquery()
+    lista_proprieta = db.session.query(Proprieta).join(Camera).filter(Camera.id.in_(id_camere_libere), Proprieta.cittaid==citta).group_by(Proprieta.id).having(func.sum(Camera.num_ospiti)>=num_ospiti).all()
+    
     return render_template("ricerca.html", user=current_user, citta=citta, lista_proprieta=lista_proprieta,check_in=check_in, check_out=check_out, num_ospiti=num_ospiti)
 
 @views.route('/prenotazioni')
@@ -59,8 +63,8 @@ def proprieta():
         db.session.add(soggiorno)
         db.session.commit()
         flash('Prenotazione effettuata con successo', category='success')
-    
-    return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta)
+    camere_libere = db.session.query(Camera).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(or_(Soggiorno.id == None, and_(check_in>Soggiorno.check_out, check_out<Soggiorno.check_in))).filter(Proprieta.id == proprieta_id).distinct()
+    return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta, camere_libere=camere_libere)
 
 @views.route('/scrivi_recensione', methods=['GET', 'POST'])
 @login_required
