@@ -29,6 +29,7 @@ class Utente(db.Model, UserMixin):
     
     proprietario: Mapped[Optional["Proprietario"]] = relationship(back_populates="utente") # -> qui ci va il nome del campo dell'altra classe
     soggiorni: Mapped[List["Soggiorno"]] = relationship(back_populates="utente")
+    recensioni: Mapped[List["Recensione"]] = relationship(back_populates="utente")
 
 class Proprietario(db.Model):
     __tablename__ = "proprietari"
@@ -70,6 +71,7 @@ class Proprieta(db.Model):
     proprietario: Mapped["Proprietario"] = relationship(back_populates="proprieta")
     camere: Mapped[List["Camera"]] = relationship(back_populates="proprieta", cascade="all, delete")
     amenita: Mapped[List["Amenita"]] = relationship(secondary=proprieta_amenita, back_populates="proprieta")
+    recensioni: Mapped[List["Recensione"]] = relationship(back_populates="proprieta")
     
 class Amenita(db.Model):
     __tablename__ = "amenita"
@@ -108,8 +110,15 @@ class Soggiorno(db.Model):
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
     camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni")
 
-    
+class Recensione(db.Model):
+    __tablename__ = "recensioni"
 
+    utente_id: Mapped[int] = mapped_column(ForeignKey("utenti.id"), primary_key=True)
+    proprieta_id: Mapped[int] = mapped_column(ForeignKey("proprieta.id"), primary_key=True)
+    stelle: Mapped[int] = mapped_column(nullable=False, default=5)
+    testo: Mapped[str] = mapped_column(String(500), nullable=False, default="")
 
+    utente: Mapped["Utente"] = relationship(back_populates="recensioni")
+    proprieta: Mapped["Proprieta"] = relationship(back_populates="recensioni")
 
     

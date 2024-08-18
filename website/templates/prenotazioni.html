@@ -35,7 +35,7 @@
                 </td>
                 <td>
                     {% if soggiorno.check_in < now %}
-                    <a href="" class=" btn-btn-primary">Recensisci</a>
+                    <a href="{{url_for('views.scrivi_recensione', proprieta_id=soggiorno.camere[0].proprieta.id)}}" class=" btn-btn-primary">Recensisci</a>
                     {% endif %}
                 </td>
             </tr>

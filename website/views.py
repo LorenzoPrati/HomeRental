@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno, occupazioni
+from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno, occupazioni, Recensione
 from . import db
 from sqlalchemy import delete, text
 import datetime
@@ -58,9 +58,31 @@ def proprieta():
         soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo_totale=0, utenteid=current_user.id, utente=current_user, camere=camere)
         db.session.add(soggiorno)
         db.session.commit()
-    
+        flash('Prenotazione effettuata con successo', category='success')
     
     return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta)
+
+@views.route('/scrivi_recensione', methods=['GET', 'POST'])
+@login_required
+def scrivi_recensione():
+    proprieta_id = request.args.get('proprieta_id')
+    vecchia_recensione = Recensione.query.get((current_user.id, proprieta_id))
+    if request.method == 'POST':
+        stelle = request.form.get("stelle")
+        testo = request.form.get("testo")
+        proprieta = Proprieta.query.get(proprieta_id)
+        recensione = Recensione(stelle=stelle, testo=testo, utente=current_user, proprieta=proprieta)
+        if vecchia_recensione:
+            vecchia_recensione.stelle = stelle
+            vecchia_recensione.testo = testo
+            db.session.commit()
+            flash('Recensione modificata.', category='success')
+        else:
+            db.session.add(recensione)
+            db.session.commit()
+            flash('Recensione pubblicata.', category='success')
+    
+    return render_template("scrivi_recensione.html", user=current_user, vecchia_recensione=vecchia_recensione)
 
 @views.route('/dashboard_proprietario', methods=['GET', 'POST'])
 @login_required
@@ -79,6 +101,7 @@ def gestisci_prenotazioni():
 @views.route('/aggiungi_proprieta', methods=['GET', 'POST'])
 @login_required
 def aggiungi_proprieta():
+    lista_citta = Citta.query.all()
     if request.method == 'POST':
         p = Proprietario.query.filter_by(id=current_user.id).first()
         if not p:
@@ -95,7 +118,7 @@ def aggiungi_proprieta():
         db.session.commit()
         flash('Property added successfully.', category='success')
         return redirect(url_for('views.dashboard_proprietario'))
-    return render_template("aggiungi_proprieta.html", user=current_user)
+    return render_template("aggiungi_proprieta.html", user=current_user, lista_citta=lista_citta)
 
 @views.route('/dettagli_proprieta_proprietario', methods=['GET', 'POST'])
 @login_required
