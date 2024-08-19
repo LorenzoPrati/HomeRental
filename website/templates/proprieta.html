@@ -5,79 +5,136 @@
 <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{ proprieta.via }} {{
     proprieta.num_civico }}</h2>
 <div class="container">
-    <div class="row d-flex justify-content-center">
-        <h4>di {{proprieta.proprietario.utente.username}}</h4>
-    </div>
     <div class="row justify-content-center">
         {% for amenita in proprieta.amenita %}
-        <button class="btn btn-primary" style="background-color: black;"
-            onclick="removeAmenity('{{amenita.nome}}', {{proprieta.id}})">
+        <div class="btn btn-primary" style="background-color: black;">
             <span>{{amenita.nome}}</span>
-            <span><i class="bi bi-x-circle"></i></span>
-        </button>
+        </div>
         {% endfor %}
     </div>
-
 </div>
-
-<div class="row">
-    <p>{{proprieta.descrizione}}</p>
-</div>
+<hr>
 
 <div class="container">
-    <form method="POST">
-        <div class="row justify-content-center">
-            {% for camera in camere_libere %}
-            <div class="col-5 p-2 d-flex align-items-stretch">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex flex-row p-2">
-                            <h5 class="card-title">Camera {{ camera.ordinale }}<i class="bi bi-dot"></i></h5>
-                            <h5>
-                                <i class="bi bi-person-fill"></i>
-                                {{camera.num_ospiti}}
-                                <i class="bi bi-dot"></i>
-                            </h5>
-                            <h5>
-                                <i class="bi bi-currency-euro"></i>
-                                {{camera.prezzo}}
-                            </h5>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input btn" type="checkbox" value="{{camera.id}}" id="{{camera.id}}"
-                                name="camere_prenotate">
-                            <label for="{{camera.id}}">Seleziona</label>
-                        </div>
-                    </div>
-                </div>
+    <div class="row">
+        <div class="col-8">
+            <div class="row justify-content-center">
+                <h4>Camere disponibili</h4>
             </div>
-            {% endfor %}
-        </div>
-        <button type="submit" class="btn btn-primary btn-lg btn-block">Prenota</button>
-        <div class="container">
-            <div class="row">
-                {% for recensione in proprieta.recensioni %}
-                <div class="col-5 p-2 d-flex align-items-stretch">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="d-flex flex-row p-2">
-                                <h5 class="card-title">{{recensione.utente.username}}<i class="bi bi-dot"></i></h5>
-                                <h5>
-                                    {{recensione.stelle}}
-                                    <i class="bi bi-star-fill"></i>
-                                </h5>
-                                <br>
-                            </div>
-                            <div class="d-flex flex-row p-2">
-                                <h6>{{recensione.testo}}</h6>
+            <div class="container">
+                <form method="POST">
+                    <div class="row justify-content-center">
+                        {% for camera in camere_libere %}
+                        <div class="col-5 p-2 d-flex align-items-stretch">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex flex-row p-2">
+                                        <h5 class="card-title">Camera {{ camera.ordinale }}<i class="bi bi-dot"></i>
+                                        </h5>
+                                        <h5>
+                                            <i class="bi bi-person-fill"></i>
+                                            {{camera.num_ospiti}}
+                                            <i class="bi bi-dot"></i>
+                                        </h5>
+                                        <h5>
+                                            <i class="bi bi-currency-euro"></i>
+                                            {{camera.prezzo}}
+                                        </h5>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input btn" type="checkbox" value="{{camera.id}}"
+                                            id="{{camera.id}}" name="camere_prenotate">
+                                        <label for="{{camera.id}}">Seleziona</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                </div>
-                {% endfor %}
+                    <hr>
+                    <div class="row p-2">
+                        {{proprieta.descrizione}}
+                    </div>
+                    <hr>
+                    <div class="row justify-content-center">
+                        <h4>Cosa ne pensano gli altri utenti</h4>
+                    </div>
+                    <div class="row justify-content-center">
+                        <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.stelle}} </h5>
+                        <h5>
+                            <i class="bi bi-dot"></i>
+                            {{proprieta.num_recensioni}} recensioni
+                        </h5>
+                        <br>
+                    </div>
+                    <div class="container">
+                        <div class="row p-2">
+                            {% for recensione in proprieta.recensioni %}
+                            <div class="col-5 p-2 d-flex align-items-stretch">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex flex-row">
+                                            <h6 class="card-title">{{recensione.utente.username}}<i
+                                                    class="bi bi-dot"></i>
+                                            </h6>
+                                            <h6>
+                                                {{recensione.stelle}}
+                                                <i class="bi bi-star-fill"></i>
+                                            </h6>
+                                            <br>
+                                        </div>
+                                        <div class="d-flex flex-row">
+                                            <h9>{{recensione.testo}}</h9>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
-    </form>
+
+        <div class="col">
+            <div class="row d-flex justify-content-center">
+                <h4>Host {{proprieta.proprietario.utente.first_name}} {{proprieta.proprietario.utente.last_name}}</h4>
+            </div>
+            <div class="row justify-content-center">
+                <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.proprietario.stelle}} </h5>
+                <h5>
+                    <i class="bi bi-dot"></i>
+                    {{proprieta.proprietario.num_recensioni}} recensioni
+                </h5>
+                <br>
+            </div>
+
+            <hr>
+
+            <div class="d-flex row p-1 justify-content-center form-group">
+                <label for="check_in">Check-in: 
+                </label><input type="datetime-local" id="check_in" name="check_in" class="form-control" value="{{check_in}}", disabled="true">
+              </div>
+              <div class="d-flex row p-1 justify-content-center form-group">
+                <label for="check_out">Check-out:</label>
+                <input type="datetime-local" id="check_out" name="check_out" class="form-control" value="{{check_out}}", disabled="true">
+              </div>
+              <div class="d-flex row p-1 justify-content-center form-group">
+              <label for="num_ospiti">Quanti ospiti:</label>
+              <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="{{num_ospiti}}", disabled="true">
+              <div class="d-flex row p-1 justify-content-center form-group">
+                <label for="citta">Metodo di pagamento: </label>
+                <select name="citta" id="citta" class="form-control">
+                  
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Prenota</button>
+
+        </div>
+    </div>
 </div>
+
 
 {% endblock %}

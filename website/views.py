@@ -28,10 +28,10 @@ def ricerca():
     num_ospiti = request.args.get('num_ospiti')
     
     #lista_proprieta = Proprieta.query.filter(Proprieta.cittaid == citta).all()
-    id_camere_libere = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(or_(Soggiorno.id == None, and_(check_in>Soggiorno.check_out, check_out<Soggiorno.check_in))).subquery()
-    lista_proprieta = db.session.query(Proprieta).join(Camera).filter(Camera.id.in_(id_camere_libere), Proprieta.cittaid==citta).group_by(Proprieta.id).having(func.sum(Camera.num_ospiti)>=num_ospiti).all()
+    id_camere_libere = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).distinct().subquery()
+    lista_proprieta = db.session.query(Proprieta).join(Camera).filter(Camera.id.not_in(id_camere_libere), Proprieta.cittaid==citta).group_by(Proprieta.id).having(func.sum(Camera.num_ospiti)>=num_ospiti).all()
     
-    return render_template("ricerca.html", user=current_user, citta=citta, lista_proprieta=lista_proprieta,check_in=check_in, check_out=check_out, num_ospiti=num_ospiti)
+    return render_template("ricerca.html", user=current_user, citta=citta, lista_proprieta=lista_proprieta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti)
 
 @views.route('/prenotazioni')
 @login_required
@@ -63,7 +63,8 @@ def proprieta():
         db.session.add(soggiorno)
         db.session.commit()
         flash('Prenotazione effettuata con successo', category='success')
-    camere_libere = db.session.query(Camera).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(or_(Soggiorno.id == None, and_(check_in>Soggiorno.check_out, check_out<Soggiorno.check_in))).filter(Proprieta.id == proprieta_id).distinct()
+    id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.proprietaid == proprieta_id).distinct().subquery()
+    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.proprietaid == proprieta_id).all()
     return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta, camere_libere=camere_libere)
 
 @views.route('/scrivi_recensione', methods=['GET', 'POST'])
@@ -82,6 +83,8 @@ def scrivi_recensione():
             db.session.commit()
             flash('Recensione modificata.', category='success')
         else:
+            proprieta.stelle = (proprieta.stelle * proprieta.num_recensioni + int(stelle)) / (proprieta.num_recensioni + 1)
+            proprieta.num_recensioni = proprieta.num_recensioni + 1
             db.session.add(recensione)
             db.session.commit()
             flash('Recensione pubblicata.', category='success')
