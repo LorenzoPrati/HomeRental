@@ -35,7 +35,7 @@
        
         {% if user.is_authenticated %}
         <div class="mr-2" style="color: black;">
-            Sei loggato come {{ user.first_name + user.last_name}}
+            Sei loggato come {{ user.nome + user.cognome}}
         </div>
         <a class="btn btn-primary" id="logout" href="/logout">Log out</a>
         {% else %}

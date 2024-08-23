@@ -11,11 +11,11 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        user = Utente.query.filter_by(email=email).first()
-        if user:
-            if user.password == password:
+        utente = Utente.query.filter_by(email=email).first()
+        if utente:
+            if utente.password == password:
                 flash('Logged in successfully.', category='success')
-                login_user(user, remember=True)
+                login_user(utente, remember=True)
                 return redirect(url_for('views.home'))
             else:
                 flash('Incorrect password, try again.', category='error')
@@ -34,25 +34,19 @@ def logout():
 def sign_up():
     if request.method == 'POST':
         email = request.form.get('email')
-        user_name = request.form.get('username')
-        first_name = request.form.get('firstname')
-        last_name = request.form.get('lastname')
+        nome_utente = request.form.get('username')
+        nome = request.form.get('firstname')
+        cognome = request.form.get('lastname')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
         
-        user = Utente.query.filter_by(email=email).first()
-        if user:
+        utente = Utente.query.filter_by(email=email).first()
+        if utente:
             flash('Email already exists.', category='error')
-        if len(email) < 4:
-            flash('Email must be greater than 3 characters.', category='error')
-        elif len(user_name) < 2:
-            flash('Username must be greater than 1 characters.', category='error') 
         elif password1 != password2:
             flash('Passwords don\'t match', category='error') 
-        elif len(password1) < 7:
-            flash('Passwords must be at least 7 characters.', category='error') 
         else:
-            utente = Utente(first_name=first_name, last_name=last_name, username=user_name, email=email, password=password1,)
+            utente = Utente(email=email, password=password1, nome_utente=nome_utente, nome=nome, cognome=cognome)
             db.session.add(utente)
             db.session.commit()
             login_user(utente, remember=True)

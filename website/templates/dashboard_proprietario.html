@@ -2,29 +2,32 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h2 align="center">Le tue proprieta</h2>
 {% if user.proprietario %}
+<h2 align="center">Le tue proprieta</h2>
 {% else %}
-    <h2 align="center">{{ user.username }}, ancora non sei proprietario.<br/>Aggiungi una proprieta' per diventarlo.</h2>
+<h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.<br />Aggiungi una proprieta' per diventarlo.
+</h2>
 {% endif %}
-    <br/>
-    <div class="container">
-        <div class="row">
-        {% for p in user.proprietario.proprieta %}
-            <div class="col-4 p-2">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ p.citta.nome }}, {{ p.via }} {{ p.num_civico }}</h5>
-                        <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=p.id) }}" class="btn btn-primary">Modifica</a>
-                        <button class="btn btn-primary" onclick="rimuovi_proprieta({{p.id}})">Elimina</button>
-                        <a href="{{ url_for('views.gestisci_prenotazioni', id=p.id) }}" class="btn btn-primary">Gestisci prenotazioni</a>
-                    </div>
+<br />
+<div class="container">
+    <div class="row">
+        {% for proprieta in user.proprietario.proprieta %}
+        <div class="col-4 p-2">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
+                    <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=proprieta.id) }}"
+                        class="btn btn-primary">Modifica</a>
+                    <button class="btn btn-primary" onclick="rimuovi_proprieta({{proprieta.id}})">Elimina</button>
+                    <a href="{{ url_for('views.gestisci_prenotazioni', id=proprieta.id) }}" class="btn btn-primary">Gestisci
+                        prenotazioni</a>
                 </div>
             </div>
-        {% endfor %}
         </div>
+        {% endfor %}
     </div>
-    
-    <br/>
-    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Aggiungi una proprieta</a>
+</div>
+
+<br />
+<a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Aggiungi una proprieta</a>
 {% endblock %}

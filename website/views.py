@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Utente, Proprieta, Proprietario, Camera, Amenita, proprieta_amenita, Citta, Soggiorno, occupazioni, Recensione
+from .models import Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, offerte, Citta, Soggiorno, occupazioni, Recensione
 from . import db
 from sqlalchemy import delete, text, or_, and_, func
 import datetime
@@ -45,16 +45,11 @@ def proprieta():
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
     num_ospiti = request.args.get('num_ospiti')
-    proprieta_id = request.args.get('proprieta_id')
-    proprieta = Proprieta.query.get(proprieta_id)
+    id_proprieta = request.args.get('proprieta_id')
+    proprieta = Proprieta.query.get(id_proprieta)
+
     if request.method == 'POST':
-        camere_id = []
         camere = []
-        #for camera in proprieta.camere:
-            #id = camera.id
-            #if request.form.get(str(id)):
-                #camere_id.append(id)
-                #flash('Eccoci', category='success')
         lista_camere_prenotate = request.form.getlist('camere_prenotate')
         for id in lista_camere_prenotate:
             camera = Camera.query.get(id)
@@ -63,8 +58,9 @@ def proprieta():
         db.session.add(soggiorno)
         db.session.commit()
         flash('Prenotazione effettuata con successo', category='success')
-    id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.proprietaid == proprieta_id).distinct().subquery()
-    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.proprietaid == proprieta_id).all()
+    
+    id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.proprietaid == id_proprieta).distinct().subquery()
+    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.proprietaid == id_proprieta).all()
     return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta, camere_libere=camere_libere)
 
 @views.route('/scrivi_recensione', methods=['GET', 'POST'])
@@ -101,31 +97,36 @@ def dashboard_proprietario():
 @login_required
 def gestisci_prenotazioni():
     proprieta_id = request.args.get('id')
-    #proprieta = Proprieta.query.get(proprieta_id)
-    soggiorni = db.session.query(Soggiorno).join(occupazioni).join(Camera).filter(Camera.proprietaid==proprieta_id).distinct()
+    soggiorni = db.session.query(Soggiorno).join(occupazioni).join(Camera).filter(Camera.id_proprieta==proprieta_id).distinct()
+    
     return render_template("gestisci_prenotazioni.html", user=current_user, soggiorni=soggiorni)
 
 @views.route('/aggiungi_proprieta', methods=['GET', 'POST'])
 @login_required
 def aggiungi_proprieta():
     lista_citta = Citta.query.all()
+    lista_tipi_struttura = Tipo_Struttura.query.all()
+
     if request.method == 'POST':
-        p = Proprietario.query.filter_by(id=current_user.id).first()
-        if not p:
-            p = Proprietario(utente=current_user, id=current_user.id)
-            db.session.add(p)
-        nuova_proprieta = Proprieta(
-            via=request.form.get('via'),
-            num_civico = request.form.get('numerocivico'),
-            cittaid = request.form.get('citta'),
-            descrizione = request.form.get('descrizione'),
-            proprietarioid = p.id
+        proprieta = Proprieta(
+            indirizzo=request.form.get('indirizzo'),
+            id_citta = request.form.get('citta'),
+            id_tipo_struttura = request.form.get('tipo_struttura'),
+            descrizione = request.form.get('descrizione')
         )
-        db.session.add(nuova_proprieta)
+        proprietario = current_user.proprietario
+        if proprietario:
+            proprieta.id_proprietario = proprietario.id
+        else:
+            current_user.proprietario = Proprietario(id=current_user.id)
+            proprieta.id_proprietario = current_user.proprietario.id 
+        proprieta.proprietario = current_user.proprietario
+        db.session.add(proprieta)
         db.session.commit()
         flash('Property added successfully.', category='success')
         return redirect(url_for('views.dashboard_proprietario'))
-    return render_template("aggiungi_proprieta.html", user=current_user, lista_citta=lista_citta)
+    
+    return render_template("aggiungi_proprieta.html", user=current_user, lista_citta=lista_citta, lista_tipi_struttura=lista_tipi_struttura)
 
 @views.route('/dettagli_proprieta_proprietario', methods=['GET', 'POST'])
 @login_required
