@@ -2,12 +2,12 @@
 {% block title %}Dettagli proprieta{% endblock %}
 
 {% block content %}
-    <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ p.citta }}, {{ p.via }} {{ p.num_civico }}</h2>
+    <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{proprieta.indirizzo}}</h2>
     <br/>
     <div class="container">
         <div class="row justify-content-center">
-            {% for amenita in p.amenita %}
-            <button class="btn btn-primary" style="background-color: black;" onclick="removeAmenity('{{amenita.nome}}', {{p.id}})">
+            {% for amenita in proprieta.amenita %}
+            <button class="btn btn-primary" style="background-color: black;" onclick="removeAmenity('{{amenita.nome}}', {{proprieta.id}})">
                 <span>{{amenita.nome}}</span>
                 <span><i class="bi bi-x-circle"></i></span>
             </button>
@@ -31,47 +31,47 @@
                     <label for="elimina_amenita">Aggiungi</label>
                     <select class="form-select" id="elimina_amenita" aria-label="Default select example">
                         <option selected>Open this select menu</option>
-                        {% for a in Amenita.query.all() %}
-                            <option value='{{a.nome}}'>{{ a.nome }}</option>
+                        {% for amenita in Amenita.query.all() %}
+                            <option value='{{amenita.nome}}'>{{ amenita.nome }}</option>
                         {% endfor %}
                       </select>
                 </form>
             </div>
             <div class="modal-footer">
               <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-              <button type="submit" class="btn btn-primary" onclick="addAmenity({{p.id}})">Save changes</button>
+              <button type="submit" class="btn btn-primary" onclick="aggiungi_amenita({{proprieta.id}})">Save changes</button>
             </div>
           </div>
         </div>
       </div>
     <form method="POST">
         <div class="p-2 form-group">
-            <textarea type="text" class="form-control" id="descrizione" name="descrizione" placeholder="{{ p.descrizione }}" rows="3"></textarea>
+            <textarea type="text" class="form-control" id="descrizione" name="descrizione" placeholder="{{ proprieta.descrizione }}" rows="3"></textarea>
         </div>
         <button type="submit" class="btn btn-primary btn-lg btn-block">Aggiorna descrizione</button>
     </form>
     <div class="container">
         <div class="row justify-content-center">
-        {% for c in p.camere %}
+        {% for camera in proprieta.camere %}
             <div class="col-5 p-2 d-flex align-items-stretch">
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex flex-row p-2">
-                            <h5 class="card-title">Camera {{ c.ordinale }}<i class="bi bi-dot"></i></h5>
+                            <h5 class="card-title">Camera {{ camera.ordinale }}<i class="bi bi-dot"></i></h5>
                             <h5>
                                 <i class="bi bi-person-fill"></i>
-                                {{c.num_ospiti}}
+                                {{camera.num_ospiti}}
                                 <i class="bi bi-dot"></i>
                             </h5>
                             <h5>
                                 <i class="bi bi-currency-euro"></i>
-                                {{c.prezzo}}
+                                {{camera.prezzo_per_notte}}
                             </h5>
                         </div>
                         
                         
                         <br>
-                        <button type="button" class="btn btn-primary" onclick="removeRoom({{c.id}})">Elimina camera</i></button>
+                        <button type="button" class="btn btn-primary" onclick="removeRoom({{camera.id}})">Elimina camera</i></button>
                         
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-                  <button type="submit" class="btn btn-primary" onclick="aggiungi_camera({{p.id}})">Save changes</button>
+                  <button type="submit" class="btn btn-primary" onclick="aggiungi_camera({{proprieta.id}})">Save changes</button>
                 </div>
               </div>
             </div>

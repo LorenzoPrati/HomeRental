@@ -35,12 +35,12 @@ function removeAmenity(nome, proprietaid) {
     });
 }
 
-function addAmenity(proprietaid) {
+function aggiungi_amenita(id_proprieta) {
     nome = document.getElementById('elimina_amenita').value
-    fetch('/addAmenity', {
+    fetch('/aggiungi_amenita', {
         method: 'POST',
         body: JSON.stringify(
-            {nome: nome, proprietaid: proprietaid}
+            {nome: nome, id_proprieta: id_proprieta}
         )
     }).then((_res) => {
         window.location.reload()

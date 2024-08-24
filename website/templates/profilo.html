@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Profilo{% endblock %}
+
+{% block content %}
+<h2 align="center">{{ user.nome }} {{ user.cognome }}</h2>
+<h4 align="center">{{ user.nome_utente }}</h4>
+<br>
+<div class="row">
+
+</div>
+<hr>
+<h4 align="center">I tuoi coupon da usare</h4>
+<div class="row">
+    {% for coupon in user.coupons %}
+    <div class="col-4 p-2">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Coupon</h5>
+                {{coupon.percentuale_sconto}}
+                {% if not coupon.pagamento %}
+                {% for tipo_struttura in user.coupons.tipi_struttura %}
+                <span>{{tipo_struttura.nome}}</span>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<hr>
+<h4 align="center">Statistiche Host</h4>
+<div class="row justify-content-center">
+    <h5 class="card-title"><i class="bi bi-star-fill"></i> {{user.proprietario.valutazione_media}} </h5>
+    <h5>
+        <i class="bi bi-dot"></i>
+        ({{user.proprietario.num_valutazioni}})
+    </h5>
+    <br>
+</div>
+{% endblock %}
