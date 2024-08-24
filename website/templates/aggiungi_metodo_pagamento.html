@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Aggiungi Paypal{% endblock %}
+
+{% block content %}
+<h2 align="center">Aggiungi un metodo di pagamento.</h2>
+<br>
+
+<div class="row">
+    <div class="col m5">
+        <a href="" class="btn btn-primary btn-lg btn-block"><i class="bi bi-credit-card-fill"></i> Carta</a>
+    </div>
+    <div class="col m5">
+        <a href="{{ url_for('views.aggiungi_paypal') }}" class="btn btn-primary btn-lg btn-block"><i class="bi bi-paypal"></i> Paypal</a>
+    </div>
+</div>
+{% endblock %}

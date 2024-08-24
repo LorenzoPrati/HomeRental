@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Aggiungi Paypal{% endblock %}
+
+{% block content %}
+<form method="POST">
+    <h3 align="center">Email conto Paypal:</h3>
+        <div class="form-group">
+            <input type="email" class="form-control" id="email" name="email" placeholder="Inserisci email">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg btn-block">Avanti</button>
+</form>
+{% endblock %}

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, offerte, Citta, Soggiorno, occupazioni, Recensione
+from .models import Metodo_Pagamento, Paypal, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione
 from . import db
 from sqlalchemy import delete, text, or_, and_, func
 import datetime
@@ -93,6 +93,44 @@ def dashboard_proprietario():
     
     return render_template("dashboard_proprietario.html", user=current_user)
 
+@views.route('/diventa_proprietario', methods=['GET', 'POST'])
+@login_required
+def diventa_proprietario():
+    if request.method == 'POST':
+        id = request.form.get('metodo_pagamento')
+        metodo = Metodo_Pagamento.query.get(id)
+        proprietario = Proprietario(id=current_user.id, id_metodo_accredito=id)
+        proprietario.metodo_accredito = metodo 
+        proprietario.utente = current_user
+        db.session.add(proprietario)
+        db.session.commit()
+        flash("Profilo proprietario creato con successo.")
+        return redirect(url_for('views.aggiungi_proprieta'))
+
+    return render_template("diventa_proprietario.html", user=current_user)
+
+@views.route('/aggiungi_metodo_pagamento', methods=['GET', 'POST'])
+@login_required
+def aggiungi_metodo_pagamento():
+
+    return render_template("aggiungi_metodo_pagamento.html", user=current_user)
+
+@views.route('/aggiungi_paypal', methods=['GET', 'POST'])
+@login_required
+def aggiungi_paypal():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id)
+        paypal = Paypal(email=email)
+        paypal.id = metodo_pagamento.id
+        metodo_pagamento.paypal = paypal
+        metodo_pagamento.utente = current_user
+        db.session.add(metodo_pagamento)
+        db.session.commit()
+        return redirect(url_for('views.diventa_proprietario'))
+
+    return render_template("aggiungi_paypal.html", user=current_user)
+
 @views.route('/gestisci_prenotazioni', methods=['GET', 'POST'])
 @login_required
 def gestisci_prenotazioni():
@@ -112,14 +150,9 @@ def aggiungi_proprieta():
             indirizzo=request.form.get('indirizzo'),
             id_citta = request.form.get('citta'),
             id_tipo_struttura = request.form.get('tipo_struttura'),
-            descrizione = request.form.get('descrizione')
+            descrizione = request.form.get('descrizione'),
+            id_proprietario = current_user.proprietario.id
         )
-        proprietario = current_user.proprietario
-        if proprietario:
-            proprieta.id_proprietario = proprietario.id
-        else:
-            current_user.proprietario = Proprietario(id=current_user.id)
-            proprieta.id_proprietario = current_user.proprietario.id 
         proprieta.proprietario = current_user.proprietario
         db.session.add(proprieta)
         db.session.commit()
@@ -214,7 +247,7 @@ def add_amenity():
     nome = obj['nome']
     proprietaid = obj['proprietaid']
 
-    st = proprieta_amenita.insert().values(proprieta_id=proprietaid, amenita_id=nome)
+    st = servizi.insert().values(proprieta_id=proprietaid, amenita_id=nome)
     db.session.execute(st)
     db.session.commit()
     return jsonify({})

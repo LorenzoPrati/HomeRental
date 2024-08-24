@@ -4,10 +4,6 @@
 {% block content %}
 {% if user.proprietario %}
 <h2 align="center">Le tue proprieta</h2>
-{% else %}
-<h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.<br />Aggiungi una proprieta' per diventarlo.
-</h2>
-{% endif %}
 <br />
 <div class="container">
     <div class="row">
@@ -19,7 +15,8 @@
                     <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=proprieta.id) }}"
                         class="btn btn-primary">Modifica</a>
                     <button class="btn btn-primary" onclick="rimuovi_proprieta({{proprieta.id}})">Elimina</button>
-                    <a href="{{ url_for('views.gestisci_prenotazioni', id=proprieta.id) }}" class="btn btn-primary">Gestisci
+                    <a href="{{ url_for('views.gestisci_prenotazioni', id=proprieta.id) }}"
+                        class="btn btn-primary">Gestisci
                         prenotazioni</a>
                 </div>
             </div>
@@ -30,4 +27,16 @@
 
 <br />
 <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Aggiungi una proprieta</a>
+{% else %}
+<h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.<br />Aggiungi una proprieta' e un metodo di
+    pagamento su cui ricevere gli accrediti per diventarlo.
+</h2>
+<br />
+{% if user.metodi_pagamento %}
+<a href="{{ url_for('views.diventa_proprietario') }}" class="btn btn-primary btn-lg btn-block">Diventa proprietario</a>
+{% else %}
+<a href="{{ url_for('views.aggiungi_metodo_pagamento') }}" class="btn btn-primary btn-lg btn-block">Diventa proprietario</a>
+{% endif %}
+
+{% endif %}
 {% endblock %}

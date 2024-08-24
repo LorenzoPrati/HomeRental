@@ -14,13 +14,13 @@ def login():
         utente = Utente.query.filter_by(email=email).first()
         if utente:
             if utente.password == password:
-                flash('Logged in successfully.', category='success')
+                flash('Loggato con successo.', category='success')
                 login_user(utente, remember=True)
                 return redirect(url_for('views.home'))
             else:
-                flash('Incorrect password, try again.', category='error')
+                flash('Password sbagliata, prova di nuovo.', category='error')
         else:
-            flash('Email does not exist.', category='error')
+            flash('Email non esiste.', category='error')
 
     return render_template("login.html", user=current_user)
 
@@ -34,15 +34,15 @@ def logout():
 def sign_up():
     if request.method == 'POST':
         email = request.form.get('email')
-        nome_utente = request.form.get('username')
-        nome = request.form.get('firstname')
-        cognome = request.form.get('lastname')
+        nome_utente = request.form.get('nome_utente')
+        nome = request.form.get('nome')
+        cognome = request.form.get('cognome')
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
         
         utente = Utente.query.filter_by(email=email).first()
         if utente:
-            flash('Email already exists.', category='error')
+            flash('Email in uso.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match', category='error') 
         else:
@@ -50,7 +50,7 @@ def sign_up():
             db.session.add(utente)
             db.session.commit()
             login_user(utente, remember=True)
-            flash('Account created.', category='success')
+            flash('Account creato con successo.', category='success')
             return redirect(url_for('views.home'))
         
     return render_template("sign_up.html", user=current_user)
