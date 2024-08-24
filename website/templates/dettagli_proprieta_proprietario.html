@@ -3,11 +3,12 @@
 
 {% block content %}
     <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{proprieta.indirizzo}}</h2>
+    <h5 align="center">{{ proprieta.tipo_struttura.nome }}</h5>
     <br/>
     <div class="container">
         <div class="row justify-content-center">
             {% for amenita in proprieta.amenita %}
-            <button class="btn btn-primary" style="background-color: black;" onclick="removeAmenity('{{amenita.nome}}', {{proprieta.id}})">
+            <button class="btn btn-primary" style="background-color: black;" onclick="rimuovi_amenita('{{amenita.nome}}', {{proprieta.id}})">
                 <span>{{amenita.nome}}</span>
                 <span><i class="bi bi-x-circle"></i></span>
             </button>
@@ -90,8 +91,8 @@
                 <div class="modal-body">
                       <label for="num_ospiti">Quante persone potranno soggiornare nella nuova camera?</label>
                       <input type="number" class="form-control" id="num_ospiti" name="=num_ospiti">
-                      <label for="prezzo">Quale sara' il prezzo a notte?</label>
-                      <input type="number" class="form-control" id="prezzo" name="prezzo">
+                      <label for="prezzo_per_notte">Quale sara' il prezzo a notte?</label>
+                      <input type="number" class="form-control" id="prezzo_per_notte" name="prezzo_per_notte">
                 </div>
                 <div class="modal-footer">
                   <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>

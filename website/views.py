@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Coupon, Metodo_Pagamento, Paypal, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione
+from .models import Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione
 from . import db
 from sqlalchemy import delete, text, or_, and_, func
 import datetime
@@ -55,37 +55,52 @@ def proprieta():
             camera = Camera.query.get(id)
             camere.append(camera)
             prezzo += camera.prezzo_per_notte
-        soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo=prezzo, utenteid=current_user.id, utente=current_user, camere=camere)
+        soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo=prezzo, id_utente=current_user.id, utente=current_user, camere=camere)
         db.session.add(soggiorno)
+        db.session.commit()
+
+        id_metodo_pagamento = request.form.get('id_metodo_pagamento')
+        totale = prezzo
+        id_coupon = request.form.get('id_coupon')
+        coupon = Coupon.query.get(id_coupon)
+        if coupon:
+            totale = prezzo - (prezzo * coupon.percentuale_sconto / 100)
+        
+        pagamento = Pagamento(id=soggiorno.id, totale=totale, id_metodo_pagamento=id_metodo_pagamento)
+        if coupon:
+            pagamento.coupon = coupon
+        
+        db.session.add(pagamento)
         db.session.commit()
         flash('Prenotazione effettuata con successo', category='success')
     
-    id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.proprietaid == id_proprieta).distinct().subquery()
-    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.proprietaid == id_proprieta).all()
+    id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.id_proprieta == id_proprieta).distinct().subquery()
+    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.id_proprieta == id_proprieta).all()
     return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta, camere_libere=camere_libere)
 
 @views.route('/scrivi_recensione', methods=['GET', 'POST'])
 @login_required
 def scrivi_recensione():
-    proprieta_id = request.args.get('proprieta_id')
-    vecchia_recensione = Recensione.query.get((current_user.id, proprieta_id))
+    id_proprieta = request.args.get('id_proprieta')
+    vecchia_recensione = Recensione.query.get((current_user.id, id_proprieta))
     if request.method == 'POST':
-        stelle = request.form.get("stelle")
+        valutazione = request.form.get("valutazione")
         testo = request.form.get("testo")
-        proprieta = Proprieta.query.get(proprieta_id)
-        recensione = Recensione(stelle=stelle, testo=testo, utente=current_user, proprieta=proprieta)
+        proprieta = Proprieta.query.get(id_proprieta)
+        
         if vecchia_recensione:
-            vecchia_recensione.stelle = stelle
+            vecchia_recensione.valutazione = valutazione
             vecchia_recensione.testo = testo
             db.session.commit()
             flash('Recensione modificata.', category='success')
         else:
-            proprieta.stelle = (proprieta.stelle * proprieta.num_recensioni + int(stelle)) / (proprieta.num_recensioni + 1)
-            proprieta.num_recensioni = proprieta.num_recensioni + 1
+            recensione = Recensione(valutazione=valutazione, testo=testo, utente=current_user, proprieta=proprieta)
+            proprieta.stelle = (proprieta.valutazione_media * proprieta.num_valutazioni + int(valutazione)) / (proprieta.num_valutazioni + 1)
+            proprieta.num_valutazioni = proprieta.num_valutazioni + 1
             coupon = Coupon(percentuale_sconto=15, id_utente = current_user.id)
             coupon.utente = current_user
             castello = Tipo_Struttura.query.get('castello')
-            castello.coupons.add(coupon)
+            castello.coupons.append(coupon)
             db.session.add(coupon)
             db.session.add(recensione)
             db.session.commit()
@@ -209,16 +224,16 @@ def remove_room():
     db.session.commit()
     return jsonify({})
 
-@views.route('/addRoom', methods=['POST'])
-def add_room():
+@views.route('/aggiungi_camera', methods=['POST'])
+def aggiungi_camera():
     obj = json.loads(request.data)
-    proprieta_id = obj['proprieta_id']
-    prezzo = int(obj['prezzo'])
+    id_proprieta = obj['id_proprieta']
+    prezzo_per_notte = int(obj['prezzo_per_notte'])
     num_ospiti = int(obj['num_ospiti'])
 
-    proprieta = Proprieta.query.get(proprieta_id)
+    proprieta = Proprieta.query.get(id_proprieta)
     ordinale = len(proprieta.camere) + 1
-    nuova_camera = Camera(proprietaid=proprieta_id, ordinale=ordinale, prezzo=prezzo, num_ospiti=num_ospiti, proprieta=proprieta, soggiorni=[])
+    nuova_camera = Camera(id_proprieta=id_proprieta, ordinale=ordinale, prezzo_per_notte=prezzo_per_notte, num_ospiti=num_ospiti, proprieta=proprieta)
 
     db.session.add(nuova_camera)
     db.session.commit()
@@ -238,17 +253,17 @@ def add_room():
     #db.session.commit()
     #return jsonify({})
 
-@views.route('/removeAmenity', methods=['POST'])
+@views.route('/rimuovi_amenita', methods=['POST'])
 def remove_amenity():
     obj = json.loads(request.data)
     nome = obj['nome']
-    proprietaid = obj['proprietaid']
-    p = Proprieta.query.get(proprietaid)
+    id_proprieta = obj['id_proprieta']
+    proprieta = Proprieta.query.get(id_proprieta)
+    amenita = Amenita.query.get(nome)
     
-    for a in p.amenita:
-        if a.nome == nome:
-            p.amenita.remove(a)
-            db.session.commit()
+    if amenita in proprieta.amenita:
+        proprieta.amenita.remove(amenita)
+    db.session.commit()
     return jsonify({})
 
 @views.route('/aggiungi_amenita', methods=['POST'])
@@ -257,12 +272,9 @@ def aggiungi_amenita():
     nome = obj['nome']
     id_proprieta = obj['id_proprieta']
 
-    #st = servizi.insert().values(id_proprieta=id_proprieta, amenita_id=nome)
-    #db.session.execute(st)
     proprieta = Proprieta.query.get(id_proprieta)
     amenita = Amenita.query.get(nome)
     proprieta.amenita.append(amenita)
-
     db.session.commit()
     return jsonify({})
 

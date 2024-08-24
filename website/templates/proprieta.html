@@ -2,27 +2,28 @@
 {% block title %}Dettagli proprieta{% endblock %}
 
 {% block content %}
-<h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{ proprieta.via }} {{
-    proprieta.num_civico }}</h2>
-<div class="container">
-    <div class="row justify-content-center">
-        {% for amenita in proprieta.amenita %}
-        <div class="btn btn-primary" style="background-color: black;">
-            <span>{{amenita.nome}}</span>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-<hr>
-
-<div class="container">
-    <div class="row">
-        <div class="col-8">
-            <div class="row justify-content-center">
-                <h4>Camere disponibili</h4>
+<h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h2>
+<h5 align="center">{{ proprieta.tipo_struttura.nome }}</h5>
+<form method="POST">
+    <div class="container">
+        <div class="row justify-content-center">
+            {% for amenita in proprieta.amenita %}
+            <div class="btn btn-primary" style="background-color: black;">
+                <span>{{amenita.nome}}</span>
             </div>
-            <div class="container">
-                <form method="POST">
+            {% endfor %}
+        </div>
+    </div>
+    <hr>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-8">
+                <div class="row justify-content-center">
+                    <h4>Camere disponibili</h4>
+                </div>
+                <div class="container">
+
                     <div class="row justify-content-center">
                         {% for camera in camere_libere %}
                         <div class="col-5 p-2 d-flex align-items-stretch">
@@ -38,7 +39,7 @@
                                         </h5>
                                         <h5>
                                             <i class="bi bi-currency-euro"></i>
-                                            {{camera.prezzo}}
+                                            {{camera.prezzo_per_notte}}
                                         </h5>
                                     </div>
                                     <div class="form-check">
@@ -60,10 +61,10 @@
                         <h4>Cosa ne pensano gli altri utenti</h4>
                     </div>
                     <div class="row justify-content-center">
-                        <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.stelle}} </h5>
+                        <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.valutazione_media}} </h5>
                         <h5>
                             <i class="bi bi-dot"></i>
-                            {{proprieta.num_recensioni}} recensioni
+                            ({{proprieta.num_valutazioni}})
                         </h5>
                         <br>
                     </div>
@@ -74,11 +75,11 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex flex-row">
-                                            <h6 class="card-title">{{recensione.utente.username}}<i
+                                            <h6 class="card-title">{{recensione.utente.nome_utente}}<i
                                                     class="bi bi-dot"></i>
                                             </h6>
                                             <h6>
-                                                {{recensione.stelle}}
+                                                {{recensione.valutazione}}
                                                 <i class="bi bi-star-fill"></i>
                                             </h6>
                                             <br>
@@ -92,49 +93,70 @@
                             {% endfor %}
                         </div>
                     </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="row d-flex justify-content-center">
-                <h4>Host {{proprieta.proprietario.utente.first_name}} {{proprieta.proprietario.utente.last_name}}</h4>
-            </div>
-            <div class="row justify-content-center">
-                <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.proprietario.stelle}} </h5>
-                <h5>
-                    <i class="bi bi-dot"></i>
-                    {{proprieta.proprietario.num_recensioni}} recensioni
-                </h5>
-                <br>
+                </div>
             </div>
 
-            <hr>
+            <div class="col">
+                <div class="row d-flex justify-content-center">
+                    <h4>Host {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}
+                    </h4>
+                </div>
+                <div class="row justify-content-center">
+                    <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.proprietario.valutazione_media}} </h5>
+                    <h5>
+                        <i class="bi bi-dot"></i>
+                        ({{proprieta.proprietario.num_valutazioni}})
+                    </h5>
+                    <br>
+                </div>
 
-            <div class="d-flex row p-1 justify-content-center form-group">
-                <label for="check_in">Check-in: 
-                </label><input type="datetime-local" id="check_in" name="check_in" class="form-control" value="{{check_in}}", disabled="true">
-              </div>
-              <div class="d-flex row p-1 justify-content-center form-group">
-                <label for="check_out">Check-out:</label>
-                <input type="datetime-local" id="check_out" name="check_out" class="form-control" value="{{check_out}}", disabled="true">
-              </div>
-              <div class="d-flex row p-1 justify-content-center form-group">
-              <label for="num_ospiti">Quanti ospiti:</label>
-              <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="{{num_ospiti}}", disabled="true">
-              <div class="d-flex row p-1 justify-content-center form-group">
-                <label for="citta">Metodo di pagamento: </label>
-                <select name="citta" id="citta" class="form-control">
-                  
-                </select>
-              </div>
+                <hr>
+
+                <div class="d-flex row p-1 justify-content-center form-group">
+                    <label for="check_in">Check-in:
+                    </label><input type="datetime-local" id="check_in" name="check_in" class="form-control"
+                        value="{{check_in}}" , disabled="true">
+                </div>
+                <div class="d-flex row p-1 justify-content-center form-group">
+                    <label for="check_out">Check-out:</label>
+                    <input type="datetime-local" id="check_out" name="check_out" class="form-control"
+                        value="{{check_out}}" , disabled="true">
+                </div>
+                <div class="d-flex row p-1 justify-content-center form-group">
+                    <label for="num_ospiti">Quanti ospiti:</label>
+                    <input type="number" id="num_ospiti" name="num_ospiti" class="form-control"
+                        placeholder="{{num_ospiti}}" , disabled="true">
+                    <div class="d-flex row p-2 justify-content-center form-group">
+                        <select class="form-control" id="id_metodo_pagamento" , name="id_metodo_pagamento">
+                            <option selected>Scegli il metodo di pagamento</option>
+                            {% for metodo_pagamento in user.metodi_pagamento %}
+                            {% if metodo_pagamento.paypal %}
+                            <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.paypal.email}}</option>
+                            {% else %}
+                            <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.carta.numero_carta}}</option>
+                            {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="d-flex row p-2 justify-content-center form-group">
+                        <select class="form-control" id="id_coupon" , name="id_coupon">
+                            <option selected>Usa un coupon</option>
+                            {% for coupon in user.coupons %}
+
+                            <option value="{{coupon.id}}">{{coupon.percentuale_sconto}}</option>
+
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-lg btn-block">Prenota</button>
+
+
+
             </div>
-
-            <button type="submit" class="btn btn-primary btn-lg btn-block">Prenota</button>
-
         </div>
     </div>
-</div>
+</form>
 
 
 {% endblock %}

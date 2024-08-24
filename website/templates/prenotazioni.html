@@ -20,7 +20,7 @@
             {% for soggiorno in user.soggiorni %}
             <tr>
                 <td>
-                    <a href="" class="btn btn-primary">{{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.via}} {{soggiorno.camere[0].proprieta.num_civico}}</a>
+                    <a href="" class="btn btn-primary">{{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}</a>
                 </td>
                 <td>{{soggiorno.check_in}}</td>
                 <td>{{soggiorno.check_out}}</td>
@@ -35,7 +35,7 @@
                 </td>
                 <td>
                     {% if soggiorno.check_in < now %}
-                    <a href="{{url_for('views.scrivi_recensione', proprieta_id=soggiorno.camere[0].proprieta.id)}}" class=" btn-btn-primary">Recensisci</a>
+                    <a href="{{url_for('views.scrivi_recensione', id_proprieta=soggiorno.camere[0].proprieta.id)}}" class=" btn-btn-primary">Recensisci</a>
                     {% endif %}
                 </td>
             </tr>

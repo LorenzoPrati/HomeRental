@@ -31,6 +31,7 @@ class Utente(db.Model, UserMixin):
     soggiorni: Mapped[Optional[List["Soggiorno"]]] = relationship(back_populates="utente")
     recensioni: Mapped[Optional[List["Recensione"]]] = relationship(back_populates="utente")
     metodi_pagamento: Mapped[Optional[List["Metodo_Pagamento"]]] = relationship(back_populates="utente")
+    coupons: Mapped[Optional[List["Coupon"]]] = relationship(back_populates="utente")
 
 class Proprietario(db.Model):
     __tablename__ = "proprietari"
@@ -139,7 +140,7 @@ class Recensione(db.Model):
 
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"), primary_key=True)
     id_proprieta: Mapped[int] = mapped_column(ForeignKey("proprieta.id"), primary_key=True)
-    valutazione: Mapped[int] = mapped_column(DECIMAL(1,1))
+    valutazione: Mapped[int] = mapped_column(DECIMAL(2,1))
     testo: Mapped[str] = mapped_column(String(500), nullable=True)
     data_ultima_modifica: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
@@ -183,6 +184,7 @@ class Coupon(db.Model):
     percentuale_sconto: Mapped[int] = mapped_column()
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
 
+    utente: Mapped["Utente"] = relationship(back_populates="coupons")
     tipi_struttura: Mapped[Optional[List[Tipo_Struttura]]] = relationship(secondary=spendibilita_coupons, back_populates="coupons")
     pagamento: Mapped[Optional["Pagamento"]] = relationship(back_populates="coupon")
 

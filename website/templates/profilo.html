@@ -9,17 +9,16 @@
 
 </div>
 <hr>
-<h4 align="center">I tuoi coupon da usare</h4>
+<h4 align="center"><i class="bi bi-ticket-fill"></i><i class="bi bi-dot"></i>Coupons</h4>
 <div class="row">
     {% for coupon in user.coupons %}
     <div class="col-4 p-2">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Coupon</h5>
-                {{coupon.percentuale_sconto}}
+                <h5 class="card-title">{{coupon.percentuale_sconto}}%</h5>
                 {% if not coupon.pagamento %}
-                {% for tipo_struttura in user.coupons.tipi_struttura %}
-                <span>{{tipo_struttura.nome}}</span>
+                {% for tipo_struttura in coupon.tipi_struttura %}
+                {{tipo_struttura.nome}}
                 {% endfor %}
                 {% endif %}
             </div>

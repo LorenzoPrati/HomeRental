@@ -12,8 +12,8 @@
         {% if vecchia_recensione %}
         <div class="form-group">
             <label for="exampleFormControlSelect2">Stelle</label>
-            <select class="form-control" id="stelle" name="stelle">
-            <option selected>{{vecchia_recensione.stelle}}</option>
+            <select class="form-control" id="valutazione" name="valutazione">
+            <option selected>{{vecchia_recensione.valutazione}}</option>
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>
@@ -27,7 +27,7 @@
         {% else %}
         <div class="form-group">
             <label for="exampleFormControlSelect2">Stelle</label>
-            <select class="form-control" id="stelle" name="stelle">
+            <select class="form-control" id="valutazione" name="valutazione">
               <option value="1">1</option>
               <option value="2">2</option>
               <option value="3">3</option>

@@ -9,26 +9,24 @@ function removeRoom(camera_id) {
     });
 }
 
-function aggiungi_camera(proprieta_id) {
+function aggiungi_camera(id_proprieta) {
     num_ospiti = document.getElementById('num_ospiti').value
-    prezzo = document.getElementById('prezzo').value
-    fetch('/addRoom', {
+    prezzo_per_notte = document.getElementById('prezzo_per_notte').value
+    fetch('/aggiungi_camera', {
         method: 'POST',
         body: JSON.stringify(
-            {proprieta_id: proprieta_id, num_ospiti: num_ospiti, prezzo: prezzo}
+            {id_proprieta: id_proprieta, num_ospiti: num_ospiti, prezzo_per_notte: prezzo_per_notte}
         )
     }).then((_res) => {
         window.location.reload()
     });
 }
 
-
-
-function removeAmenity(nome, proprietaid) {
-    fetch('/removeAmenity', {
+function rimuovi_amenita(nome, id_proprieta) {
+    fetch('/rimuovi_amenita', {
         method: 'POST',
         body: JSON.stringify(
-            {nome: nome, proprietaid: proprietaid}
+            {nome: nome, id_proprieta: id_proprieta}
         )
     }).then((_res) => {
         window.location.reload()
