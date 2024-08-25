@@ -147,6 +147,9 @@ class Recensione(db.Model):
     utente: Mapped["Utente"] = relationship(back_populates="recensioni")
     proprieta: Mapped["Proprieta"] = relationship(back_populates="recensioni")
 
+    def getStringaData(self):
+        return self.data_ultima_modifica.strftime("%B %Y")
+
 class Metodo_Pagamento(db.Model):
     __tablename__ = "metodi_pagamento"
 

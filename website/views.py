@@ -78,7 +78,7 @@ def proprieta():
     id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.id_proprieta == id_proprieta).distinct().subquery()
     camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.id_proprieta == id_proprieta).all()
     
-    coupons = db.session.query(Coupon).join(spendibilita_coupons).filter(spendibilita_coupons.c.id_tipo_struttura==proprieta.id_tipo_struttura, Coupon.id_utente == current_user.id).all()
+    coupons = db.session.query(Coupon).outerjoin(Pagamento).outerjoin(spendibilita_coupons).filter(spendibilita_coupons.c.id_tipo_struttura==proprieta.id_tipo_struttura, Coupon.id_utente==current_user.id, Pagamento.id_coupon==None).all()
 
     return render_template("proprieta.html", user=current_user, citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta=proprieta, camere_libere=camere_libere, coupons=coupons)
 
@@ -125,8 +125,9 @@ def profilo():
 @views.route('/dashboard_proprietario', methods=['GET', 'POST'])
 @login_required
 def dashboard_proprietario():
+    flag = True
     
-    return render_template("dashboard_proprietario.html", user=current_user)
+    return render_template("dashboard_proprietario.html", user=current_user, flag=flag)
 
 @views.route('/pagamento', methods=['GET', 'POST'])
 @login_required
@@ -139,17 +140,16 @@ def pagamento():
 @views.route('/metodi_pagamento', methods=['GET', 'POST'])
 @login_required
 def metodi_pagamento():
+    flag = request.args.get('flag')
 
-    return render_template("metodi_pagamento.html", user=current_user)
+    return render_template("metodi_pagamento.html", user=current_user, flag=flag)
 
 @views.route('/aggiungi_paypal', methods=['GET', 'POST'])
 @login_required
 def aggiungi_paypal():
+    flag = request.args.get('flag')
 
     if request.method == 'POST':
-        flag = False
-        if not current_user.proprietario and not current_user.metodi_pagamento:
-            flag = True
 
         email = request.form.get('email')
         metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id)
@@ -161,7 +161,7 @@ def aggiungi_paypal():
         db.session.commit()
         flash('Metodo di pagamento aggiunto con successo.', category='success')
 
-        if flag == True:
+        if flag:
             return redirect(url_for('views.aggiungi_proprieta'))
         else:
             return redirect(url_for('views.metodi_pagamento'))

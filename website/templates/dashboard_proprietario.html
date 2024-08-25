@@ -37,7 +37,7 @@
 {% if user.metodi_pagamento %}
 <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Diventa proprietario</a>
 {% else %}
-<a href="{{ url_for('views.metodi_pagamento') }}" class="btn btn-primary btn-lg btn-block">Diventa proprietario</a>
+<a href="{{ url_for('views.metodi_pagamento', flag=flag) }}" class="btn btn-primary btn-lg btn-block">Diventa proprietario</a>
 {% endif %}
 
 {% endif %}

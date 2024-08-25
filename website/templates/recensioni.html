@@ -20,7 +20,9 @@
                 <tr>
                     <th scope="col">Utente</th>
                     <th scope="col">Valutazione</th>
+                    <th scope="col">Data</th>
                     <th scope="col">Testo</th>
+                    
                 </tr>
             </thead>
             <tbody>
@@ -29,7 +31,9 @@
                     
                     <td>{{recensione.utente.nome_utente}}</td>
                     <td>{{recensione.valutazione}}</td>
+                    <td>{{recensione.getStringaData()}}</td>
                     <td>{{recensione.testo}}</td>
+                    
                     
                 </tr>
                 {% endfor %}
