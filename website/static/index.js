@@ -1,8 +1,8 @@
-function removeRoom(camera_id) {
-    fetch('/removeRoom', {
+function rimuovi_camera(id_camera) {
+    fetch('/rimuovi_camera', {
         method: 'POST',
         body: JSON.stringify(
-            {camera_id: camera_id}
+            {id_camera: id_camera}
         )
     }).then((_res) => {
         window.location.reload()
@@ -45,11 +45,11 @@ function aggiungi_amenita(id_proprieta) {
     });
 }
 
-function rimuovi_proprieta(proprietaid) {
+function rimuovi_proprieta(id_proprieta) {
     fetch('/rimuovi_proprieta', {
         method: 'POST',
         body: JSON.stringify(
-            {proprietaid: proprietaid}
+            {id_proprieta: id_proprieta}
         )
     }).then((_res) => {
         window.location.reload()

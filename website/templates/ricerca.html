@@ -8,8 +8,10 @@
             <div class="col-4 p-2">
                 <div class="card">
                     <div class="card-body">
-                        <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.via }} {{ proprieta.num_civico }}</h5>
-                        <a href="{{ url_for('views.proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta_id=proprieta.id) }}" class="btn btn-primary" target="_blank">Vedi camere</a>
+                        <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
+                        <h6>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</h6>
+                        <h6>{{proprieta.valutazione_media}}<i class="bi bi-star-fill p-1" style="color: rgb(255, 196, 0);"></i> ({{proprieta.num_valutazioni}})</h6>
+                        <a href="{{ url_for('views.proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, proprieta_id=proprieta.id) }}" class="btn btn-primary btn-lg btn-block" target="_blank">Scopri</a>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for
-from .models import Utente
+from .models import Utente, Coupon, Tipo_Struttura, spendibilita_coupons
 from . import db
 from flask_login import login_user, login_required, logout_user, current_user
+import random
 
 auth = Blueprint('auth', __name__)
 
@@ -51,6 +52,20 @@ def sign_up():
             db.session.commit()
             login_user(utente, remember=True)
             flash('Account creato con successo.', category='success')
+
+            
+            tipi_struttura = Tipo_Struttura.query.all()
+            for i in range(3):
+                num_tipi_struttura = random.randint(1,3)
+                tipi_struttura_casuali = random.sample(tipi_struttura, num_tipi_struttura)
+                percentuale_sconto_casuale = random.randrange(0,50,10)
+                coupon = Coupon(percentuale_sconto=percentuale_sconto_casuale, id_utente=utente.id)
+                coupon.utente = utente
+                coupon.tipi_struttura = tipi_struttura_casuali
+                db.session.add(coupon)
+                db.session.commit()
+
+
             return redirect(url_for('views.home'))
         
     return render_template("sign_up.html", user=current_user)

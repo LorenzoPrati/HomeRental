@@ -142,7 +142,7 @@ class Recensione(db.Model):
     id_proprieta: Mapped[int] = mapped_column(ForeignKey("proprieta.id"), primary_key=True)
     valutazione: Mapped[int] = mapped_column(DECIMAL(2,1))
     testo: Mapped[str] = mapped_column(String(500), nullable=True)
-    data_ultima_modifica: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+    data_ultima_modifica: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
 
     utente: Mapped["Utente"] = relationship(back_populates="recensioni")
     proprieta: Mapped["Proprieta"] = relationship(back_populates="recensioni")
@@ -192,10 +192,13 @@ class Pagamento(db.Model):
     __tablename__ = "pagamenti"
 
     id: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), primary_key=True)
-    totale: Mapped[int] = mapped_column()
     id_metodo_pagamento: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_coupon: Mapped[int] = mapped_column(ForeignKey("coupons.id"), unique=True, nullable=True)
+    data_creazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
     soggiorno: Mapped["Soggiorno"] = relationship(back_populates="pagamento")
     metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="pagamenti")
     coupon: Mapped[Optional["Coupon"]] = relationship(back_populates="pagamento")
+
+    def getTotalePagato(self):
+        return self.soggiorno.prezzo - (self.soggiorno.prezzo * self.coupon.percentuale_sconto / 100)

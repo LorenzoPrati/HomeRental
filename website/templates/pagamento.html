@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Prenotazioni{% endblock %}
+
+{% block content %}
+
+<h2 align="center">Il tuo pagamento</i></h2>
+<div class="container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Totale</th>
+                <th scope="col">Totale Pagato</th>
+                <th scope="col">Sconto</th>
+                <th scope="col">Metodo</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{pagamento.data_creazione}}</td>
+                <td>{{pagamento.soggiorno.prezzo}}</td>
+                <td>
+                    {% if pagamento.coupon %}
+                    {{pagamento.getTotalePagato()}}
+                    {% else %}
+                    {{pagamento.soggiorno.prezzo}}
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pagamento.coupon %}
+                    {{pagamento.coupon.percentuale_sconto}}%
+                    {% else %}
+                    {{0}}%
+                    {% endif %}
+                </td>
+                <td>
+                    {% if pagamento.metodo_pagamento.paypal %}
+                    {{pagamento.metodo_pagamento.paypal.email}}
+                    {% else %}
+                    {{pagamento.metodo_pagamento.carta.numero}}
+                    {% endif %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

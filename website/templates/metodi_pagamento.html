@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Aggiungi Paypal{% endblock %}
+
+{% block content %}
+{% if user.metodi_pagamento %}
+<h2 align="center">I tuoi metodi di pagamento</h2>
+<div class="d-flex justify-content-center p-4">
+<ul>
+{% for metodo_pagamento in user.metodi_pagamento %}
+{% if metodo_pagamento.paypal %}
+<li>{{metodo_pagamento.paypal.email}}</li>
+{% else %}
+<li>{{metodo_pagamento.carta.numero_carta}} {{metodo_pagamento.carta.data_scadenza}}</li>
+{% endif %}
+{% endfor %}
+</ul>
+</div>
+<hr>
+{% endif %}
+
+
+<h2 align="center">Aggiungi un metodo di pagamento.</h2>
+<br>
+
+<div class="row">
+    <div class="col m5">
+        <a href="" class="btn btn-primary btn-lg btn-block"><i class="bi bi-credit-card-fill"></i> Carta</a>
+    </div>
+    <div class="col m5">
+        <a href="{{ url_for('views.aggiungi_paypal') }}"
+            class="btn btn-primary btn-lg btn-block"><i class="bi bi-paypal"></i> Paypal</a>
+    </div>
+</div>
+{% endblock %}

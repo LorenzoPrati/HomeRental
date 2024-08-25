@@ -12,6 +12,7 @@
                 <th scope="col">Check Out</th>
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
+                <th scope="col">Prezzo</th>
                 <th scope="col">Pagamento</th>
                 <th scope="col">Valutazione</th>
             </tr>
@@ -20,7 +21,7 @@
             {% for soggiorno in user.soggiorni %}
             <tr>
                 <td>
-                    <a href="" class="btn btn-primary">{{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}</a>
+                    {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
                 </td>
                 <td>{{soggiorno.check_in}}</td>
                 <td>{{soggiorno.check_out}}</td>
@@ -30,12 +31,13 @@
                     {{camera.ordinale}}, 
                     {% endfor %}
                 </td>
+                <td>{{soggiorno.prezzo}}</td>
                 <td>
-                    <a href="" class=" btn-btn-primary">Vedi dettagli</a>
+                    <a href="{{url_for('views.pagamento', id_pagamento=soggiorno.pagamento.id)}}">Vedi dettagli</a>
                 </td>
                 <td>
                     {% if soggiorno.check_in < now %}
-                    <a href="{{url_for('views.scrivi_recensione', id_proprieta=soggiorno.camere[0].proprieta.id)}}" class=" btn-btn-primary">Recensisci</a>
+                    <a href="{{url_for('views.scrivi_recensione', id_proprieta=soggiorno.camere[0].proprieta.id)}}">Recensisci</a>
                     {% endif %}
                 </td>
             </tr>
