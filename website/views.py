@@ -15,9 +15,13 @@ def home():
         check_in = request.form.get('check_in')
         check_out = request.form.get('check_out')
         num_ospiti = request.form.get('num_ospiti')
-        return redirect(url_for('views.ricerca', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti))
 
-    return render_template("home.html", user=current_user, Citta=Citta)
+        tipo_struttura = request.form.get('tipo_struttura')
+        amenita_selezionate = request.form.getlist('amenita_selezionate')
+
+        return redirect(url_for('views.ricerca', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, tipo_struttura=tipo_struttura, amenita_selezionate=amenita_selezionate))
+
+    return render_template("home.html", user=current_user, Citta=Citta, Tipo_Struttura=Tipo_Struttura, Amenita=Amenita)
 
 @views.route('/ricerca', methods=['GET', 'POST'])
 @login_required
@@ -26,9 +30,19 @@ def ricerca():
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
     num_ospiti = request.args.get('num_ospiti')
+    tipo_struttura = request.args.getlist('tipo_struttura')
+    amenita_selezionate = request.args.getlist('amenita_selezionate')
+
+    if not tipo_struttura:
+        tipo_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
+    if not amenita_selezionate:
+        amenita_selezionate = [a.nome for a in db.session.query(Amenita.nome).all()]
     
     id_camere_occupate = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).distinct().subquery()
-    lista_proprieta = db.session.query(Proprieta).join(Camera).filter(Camera.id.not_in(id_camere_occupate), Proprieta.id_citta==citta).group_by(Proprieta.id).having(func.sum(Camera.num_ospiti)>=num_ospiti).all()
+    
+    id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(servizi.c.id_amenita.in_(amenita_selezionate)).filter(Proprieta.id_citta==citta).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
+
+    lista_proprieta = db.session.query(Proprieta).join(Camera).filter(Camera.id.not_in(id_camere_occupate), Proprieta.id.in_(id_proprieta_valide)).group_by(Proprieta.id).having(func.sum(Camera.num_ospiti)>=num_ospiti).all()
     
     return render_template("ricerca.html", user=current_user, citta=citta, lista_proprieta=lista_proprieta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti)
 
@@ -78,8 +92,9 @@ def proprieta():
                 flash('Prenotazione effettuata con successo.', category='success')
                 return redirect(url_for('views.prenotazioni'))
     
-    id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.id_proprieta == id_proprieta).distinct().subquery()
-    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.id_proprieta == id_proprieta).all()
+    id_camere_occupate = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).distinct().subquery()
+    
+    camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.id_proprieta==id_proprieta).all()
     
     coupons = db.session.query(Coupon).outerjoin(Pagamento).outerjoin(spendibilita_coupons).filter(spendibilita_coupons.c.id_tipo_struttura==proprieta.id_tipo_struttura, Coupon.id_utente==current_user.id, Pagamento.id_coupon==None).all()
 
@@ -226,8 +241,9 @@ def aggiungi_proprieta():
         if not current_user.proprietario:
             id = request.form.get('metodo_pagamento')
             biografia = request.form.get('biografia')
+            telefono = request.form.get('telefono')
             metodo = Metodo_Pagamento.query.get(id)
-            proprietario = Proprietario(id=current_user.id, id_metodo_accredito=id, biografia=biografia)
+            proprietario = Proprietario(id=current_user.id, id_metodo_accredito=id, biografia=biografia, telefono=telefono)
             proprietario.metodo_accredito = metodo 
             proprietario.utente = current_user
             db.session.add(proprietario)
@@ -319,3 +335,36 @@ def rimuovi_proprieta():
         db.session.delete(soggiorno)
     db.session.commit()
     return jsonify({})
+
+@views.route('/migliori_host', methods=['GET', 'POST'])
+@login_required
+def migliori_host():
+    valutazione_media_globale = db.session.query(func.avg(Proprietario.valutazione_media)).scalar()
+    proprietari = db.session.query(Proprietario)\
+        .order_by(((Proprietario.valutazione_media * Proprietario.num_valutazioni) / (Proprietario.num_valutazioni + 10)) + \
+                            ((10 * valutazione_media_globale) / (Proprietario.num_valutazioni + 10))).limit(10)
+    
+    return render_template("migliori_host.html", user=current_user, proprietari=proprietari)
+
+@views.route('/citta_popolari', methods=['GET', 'POST'])
+@login_required
+def citta_popolari():
+    start_date = datetime.datetime.now() - datetime.timedelta(days=30)
+    end_date = datetime.datetime.now()
+
+    citta = db.session.query(Proprieta.id_citta.label('citta'), func.count(func.distinct(Soggiorno.id)).label('numero_soggiorni'))\
+        .outerjoin(occupazioni)\
+        .outerjoin(Camera)\
+        .outerjoin(Proprieta)\
+        .group_by(Proprieta.id)\
+        .filter(Soggiorno.check_in >= start_date, Soggiorno.check_out <= end_date)\
+        .order_by(func.count(func.distinct(Soggiorno.id)).desc())
+
+    return render_template("citta_popolari.html", user=current_user, citta=citta)
+
+@views.route('/migliori_proprieta', methods=['GET', 'POST'])
+@login_required
+def migliori_proprieta():
+    proprieta = db.session.query(Proprieta).order_by(Proprieta.valutazione_media.desc()).limit(10)
+
+    return render_template("migliori_proprieta.html", user=current_user, proprieta=proprieta)

@@ -38,6 +38,7 @@ class Proprietario(db.Model):
 
     id: Mapped[int] = mapped_column(ForeignKey("utenti.id"), primary_key=True)
     biografia: Mapped[str] = mapped_column(String(500), nullable=True)
+    telefono: Mapped[str] = mapped_column(String(256))
     valutazione_media: Mapped[int] = mapped_column(DECIMAL(2,1), default=0)
     num_valutazioni: Mapped[int] = mapped_column(default=0)
     id_metodo_accredito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))

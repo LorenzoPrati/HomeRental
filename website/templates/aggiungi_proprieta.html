@@ -11,6 +11,10 @@
         <textarea class="form-control" name="biografia" id="biografia"
             rows="1">Di qualcosa su di te ai tuoi futuri ospiti.</textarea>
     </div>
+    <div class="form-group">
+        <laber for="telefono"></laber>
+        <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="Inserisci numero di telefono">
+    </div>
     <select class="form-control" id="metodo_pagamento" , name="metodo_pagamento">
         <option selected>Scegli il metodo di accredito</option>
         {% for metodo_pagamento in user.metodi_pagamento %}

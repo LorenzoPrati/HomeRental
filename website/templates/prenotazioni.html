@@ -8,11 +8,12 @@
         <thead>
             <tr>
                 <th scope="col">Luogo</th>
+                <th scope="col">Host</th>
+                <th scope="col">Telefono</th>
                 <th scope="col">Check In</th>
                 <th scope="col">Check Out</th>
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
-                <th scope="col">Prezzo</th>
                 <th scope="col">Pagamento</th>
                 <th scope="col">Valutazione</th>
             </tr>
@@ -24,6 +25,8 @@
                 <td>
                     {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
                 </td>
+                <td>{{soggiorno.camere[0].proprieta.proprietario.utente.nome}} {{soggiorno.camere[0].proprieta.proprietario.utente.cognome}}</td>
+                <td>{{soggiorno.camere[0].proprieta.proprietario.telefono}}</td>
                 <td>{{soggiorno.check_in}}</td>
                 <td>{{soggiorno.check_out}}</td>
                 <td>{{soggiorno.num_ospiti}}</td>
@@ -32,7 +35,6 @@
                     {{camera.ordinale}}, 
                     {% endfor %}
                 </td>
-                <td>{{soggiorno.prezzo}}</td>
                 <td>
                     <a href="{{url_for('views.pagamento', id_pagamento=soggiorno.pagamento.id)}}">Vedi dettagli</a>
                 </td>
