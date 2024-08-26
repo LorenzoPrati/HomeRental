@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione, spendibilita_coupons
+from .models import Carta, Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione, spendibilita_coupons
 from . import db
 from sqlalchemy import delete, text, or_, and_, func
 import datetime
@@ -55,25 +55,28 @@ def proprieta():
             camera = Camera.query.get(id)
             camere.append(camera)
             prezzo += camera.prezzo_per_notte
-        soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo=prezzo, id_utente=current_user.id, utente=current_user, camere=camere)
-        db.session.add(soggiorno)
-        db.session.commit()
-
-        id_metodo_pagamento = request.form.get('id_metodo_pagamento')
-        id_coupon = request.form.get('id_coupon')
-
-        if not id_metodo_pagamento:
-            flash('Devi selezionare un metodo di pagamento.', category='error')
+        if len(camere) == 0:
+            flash('Devi selezionare almeno una camera.', category='error')
         else:
-            pagamento = Pagamento(id=soggiorno.id, id_metodo_pagamento=id_metodo_pagamento, id_coupon=id_coupon)
-            if id_coupon:
-                coupon = Coupon.query.get(id_coupon)
-                pagamento.coupon = coupon
-            db.session.add(pagamento)
+            soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo=prezzo, id_utente=current_user.id, utente=current_user, camere=camere)
+            db.session.add(soggiorno)
             db.session.commit()
 
-            flash('Prenotazione effettuata con successo.', category='success')
-            return redirect(url_for('views.prenotazioni'))
+            id_metodo_pagamento = request.form.get('id_metodo_pagamento')
+            id_coupon = request.form.get('id_coupon')
+
+            if not id_metodo_pagamento:
+                flash('Devi selezionare un metodo di pagamento.', category='error')
+            else:
+                pagamento = Pagamento(id_soggiorno=soggiorno.id, id_metodo_pagamento=id_metodo_pagamento, id_coupon=id_coupon)
+                if id_coupon:
+                    coupon = Coupon.query.get(id_coupon)
+                    pagamento.coupon = coupon
+                db.session.add(pagamento)
+                db.session.commit()
+
+                flash('Prenotazione effettuata con successo.', category='success')
+                return redirect(url_for('views.prenotazioni'))
     
     id_camere_occupate = db.session.query(Camera.id).join(Proprieta).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).filter(Camera.id_proprieta == id_proprieta).distinct().subquery()
     camere_libere = db.session.query(Camera).filter(Camera.id.not_in(id_camere_occupate), Camera.id_proprieta == id_proprieta).all()
@@ -94,7 +97,7 @@ def scrivi_recensione():
         
         if vecchia_recensione:
             vecchia_recensione.testo = testo
-            proprieta.valutazione_media = (proprieta.valutazione_media * proprieta.num_recensioni - vecchia_recensione.valutazione + valutazione) / proprieta.num_recensioni
+            proprieta.valutazione_media = (proprieta.valutazione_media * proprieta.num_valutazioni - vecchia_recensione.valutazione + int(valutazione)) / proprieta.num_valutazioni
             vecchia_recensione.valutazione = valutazione
             vecchia_recensione.data_ultima_modifica = datetime.datetime.now()
             db.session.commit()
@@ -143,6 +146,30 @@ def metodi_pagamento():
     flag = request.args.get('flag')
 
     return render_template("metodi_pagamento.html", user=current_user, flag=flag)
+
+@views.route('/aggiungi_carta', methods=['GET', 'POST'])
+@login_required
+def aggiungi_carta():
+    flag = request.args.get('flag')
+
+    if request.method == 'POST':
+        numero_carta = request.form.get('numero_carta')
+        data_scadenza = request.form.get('data_scadenza')
+        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id)
+        carta = Carta(numero_carta=numero_carta, data_scadenza=data_scadenza)
+        carta.id = metodo_pagamento.id
+        metodo_pagamento.carta = carta
+        metodo_pagamento.utente = current_user
+        db.session.add(metodo_pagamento)
+        db.session.commit()
+        flash('Metodo di pagamento aggiunto con successo.', category='success')
+
+        if flag:
+            return redirect(url_for('views.aggiungi_proprieta'))
+        else:
+            return redirect(url_for('views.metodi_pagamento'))
+
+    return render_template("aggiungi_carta.html", user=current_user)
 
 @views.route('/aggiungi_paypal', methods=['GET', 'POST'])
 @login_required
@@ -286,6 +313,9 @@ def rimuovi_proprieta():
     id_proprieta = obj['id_proprieta']
 
     proprieta = Proprieta.query.get(id_proprieta)
+    soggiorni = db.session.query(Soggiorno).outerjoin(occupazioni).join(Camera).filter(Camera.id_proprieta==id_proprieta).distinct().all()
     db.session.delete(proprieta)
+    for soggiorno in soggiorni:
+        db.session.delete(soggiorno)
     db.session.commit()
     return jsonify({})

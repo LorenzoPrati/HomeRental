@@ -95,7 +95,7 @@
             </div>
             <div class="col">
                 <div class="row d-flex justify-content-center">
-                    <h4>Host {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}
+                    <h4>{{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}
                     </h4>
                 </div>
                 <div class="row justify-content-center">
@@ -121,7 +121,7 @@
                 </div>
                 <div class="d-flex row justify-content-center form-group">
                     <select class="form-control" id="id_metodo_pagamento" , name="id_metodo_pagamento">
-                        <option selected>Scegli il metodo di pagamento</option>
+                        <option selected disabled>Scegli il metodo di pagamento</option>
                         {% for metodo_pagamento in user.metodi_pagamento %}
                         {% if metodo_pagamento.paypal %}
                         <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.paypal.email}}</option>
@@ -133,12 +133,12 @@
                 </div>
                 <div class="d-flex row p-2 justify-content-center form-group">
                     <select class="form-control" id="id_coupon" , name="id_coupon">
-                        <option selected>Usa un coupon</option>
+                        <option selected disabled>Usa un coupon</option>
                         {% for coupon in coupons %}
                         <option value="{{coupon.id}}">
                             {{coupon.percentuale_sconto}}% -
                             {% for tipo_struttura in coupon.tipi_struttura%}
-                            {{tipo_struttura}},
+                            {{tipo_struttura.nome}},
                             {% endfor %}
                         </option>
                         {% endfor %}

@@ -10,7 +10,7 @@
 {% if metodo_pagamento.paypal %}
 <li>{{metodo_pagamento.paypal.email}}</li>
 {% else %}
-<li>{{metodo_pagamento.carta.numero_carta}} {{metodo_pagamento.carta.data_scadenza}}</li>
+<li>{{metodo_pagamento.carta.numero_carta}}</li>
 {% endif %}
 {% endfor %}
 </ul>
@@ -19,12 +19,12 @@
 {% endif %}
 
 
-<h2 align="center">Aggiungi un metodo di pagamento.</h2>
+<h2 align="center">Aggiungi un metodo di pagamento</h2>
 <br>
 
 <div class="row">
     <div class="col m5">
-        <a href="" class="btn btn-primary btn-lg btn-block"><i class="bi bi-credit-card-fill"></i> Carta</a>
+        <a href="{{url_for('views.aggiungi_carta', flag=flag)}}" class="btn btn-primary btn-lg btn-block"><i class="bi bi-credit-card-fill"></i> Carta</a>
     </div>
     <div class="col m5">
         <a href="{{ url_for('views.aggiungi_paypal', flag=flag) }}"

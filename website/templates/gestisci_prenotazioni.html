@@ -17,7 +17,7 @@
         <tbody>
             {% for soggiorno in soggiorni %}
             <tr>
-                <td>{{soggiorno.utente}}</td>
+                <td>{{soggiorno.utente.nome}} {{soggiorno.utente.cognome}}</td>
                 <td>{{soggiorno.check_in}}</td>
                 <td>{{soggiorno.check_out}}</td>
                 <td>{{soggiorno.num_ospiti}}</td>

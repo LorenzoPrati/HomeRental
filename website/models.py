@@ -97,8 +97,8 @@ class Proprieta(db.Model):
     amenita: Mapped[Optional[List["Amenita"]]] = relationship(secondary=servizi, back_populates="proprieta")
     citta: Mapped["Citta"] = relationship(back_populates="proprieta")
     tipo_struttura: Mapped["Tipo_Struttura"] = relationship(back_populates="proprieta")
-    camere: Mapped[Optional[List["Camera"]]] = relationship(back_populates="proprieta")
-    recensioni: Mapped[Optional[List["Recensione"]]] = relationship(back_populates="proprieta")
+    camere: Mapped[Optional[List["Camera"]]] = relationship(back_populates="proprieta", cascade="all, delete")
+    recensioni: Mapped[Optional[List["Recensione"]]] = relationship(back_populates="proprieta", cascade="all, delete")
 
 occupazioni = db.Table(
     "occupazioni",
@@ -132,7 +132,7 @@ class Soggiorno(db.Model):
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
 
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
-    camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni")
+    camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni", cascade="all, delete")
     pagamento: Mapped["Pagamento"] = relationship(back_populates="soggiorno")
 
 class Recensione(db.Model):
@@ -148,7 +148,7 @@ class Recensione(db.Model):
     proprieta: Mapped["Proprieta"] = relationship(back_populates="recensioni")
 
     def getStringaData(self):
-        return self.data_ultima_modifica.strftime("%B %Y")
+        return self.data_ultima_modifica.strftime("%d %B %Y")
 
 class Metodo_Pagamento(db.Model):
     __tablename__ = "metodi_pagamento"
@@ -175,7 +175,6 @@ class Carta(db.Model):
 
     id: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"), primary_key=True)
     numero_carta: Mapped[str] = mapped_column(String(256), unique=True)
-    cvc: Mapped[int] = mapped_column()
     data_scadenza: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     
     metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="carta")
@@ -194,10 +193,11 @@ class Coupon(db.Model):
 class Pagamento(db.Model):
     __tablename__ = "pagamenti"
 
-    id: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     id_metodo_pagamento: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_coupon: Mapped[int] = mapped_column(ForeignKey("coupons.id"), unique=True, nullable=True)
     data_creazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+    id_soggiorno: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), nullable=True)
 
     soggiorno: Mapped["Soggiorno"] = relationship(back_populates="pagamento")
     metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="pagamenti")

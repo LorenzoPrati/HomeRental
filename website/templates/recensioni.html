@@ -3,16 +3,9 @@
 
 {% block content %}
 <h2 align="center">{{proprieta.citta.nome}}, {{proprieta.indirizzo}}</h2>
-<br />
 <div class="container">
-
     <div class="row justify-content-center">
-        <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.valutazione_media}} </h5>
-        <h5>
-            <i class="bi bi-dot"></i>
-            ({{proprieta.num_valutazioni}})
-        </h5>
-        <br>
+        <h5 class="card-title"><i class="bi bi-star-fill"></i> {{proprieta.valutazione_media}} ({{proprieta.num_valutazioni}})</h5>
     </div>
     <div class="row p-2 justify-content-center">
         <table class="table">
@@ -22,26 +15,19 @@
                     <th scope="col">Valutazione</th>
                     <th scope="col">Data</th>
                     <th scope="col">Testo</th>
-                    
                 </tr>
             </thead>
             <tbody>
                 {% for recensione in proprieta.recensioni %}
                 <tr>
-                    
                     <td>{{recensione.utente.nome_utente}}</td>
                     <td>{{recensione.valutazione}}</td>
                     <td>{{recensione.getStringaData()}}</td>
                     <td>{{recensione.testo}}</td>
-                    
-                    
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
-
     </div>
-
-
 </div>
 {% endblock %}

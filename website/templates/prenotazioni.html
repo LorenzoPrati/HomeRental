@@ -19,6 +19,7 @@
         </thead>
         <tbody>
             {% for soggiorno in user.soggiorni %}
+            {% if soggiorno.camere %}
             <tr>
                 <td>
                     {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
@@ -41,6 +42,7 @@
                     {% endif %}
                 </td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>

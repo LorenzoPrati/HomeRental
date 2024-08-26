@@ -58,7 +58,7 @@ def sign_up():
             for i in range(3):
                 num_tipi_struttura = random.randint(1,3)
                 tipi_struttura_casuali = random.sample(tipi_struttura, num_tipi_struttura)
-                percentuale_sconto_casuale = random.randrange(0,50,10)
+                percentuale_sconto_casuale = random.randrange(10,50,10)
                 coupon = Coupon(percentuale_sconto=percentuale_sconto_casuale, id_utente=utente.id)
                 coupon.utente = utente
                 coupon.tipi_struttura = tipi_struttura_casuali
