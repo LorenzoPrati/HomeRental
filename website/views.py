@@ -11,37 +11,47 @@ views = Blueprint('views', __name__)
 @login_required
 def home():
     if request.method == 'POST':
-        citta = request.form.get('citta')
+        citta = request.form.getlist('citta')
         check_in = request.form.get('check_in')
         check_out = request.form.get('check_out')
         num_ospiti = request.form.get('num_ospiti')
-
         tipo_struttura = request.form.get('tipo_struttura')
         amenita_selezionate = request.form.getlist('amenita_selezionate')
 
-        return redirect(url_for('views.ricerca', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, tipo_struttura=tipo_struttura, amenita_selezionate=amenita_selezionate))
+        if check_in and check_out:
+            if not num_ospiti:
+                num_ospiti=1
+            elif int(num_ospiti) <= 0:
+                num_ospiti = 1
+            return redirect(url_for('views.ricerca', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, tipo_struttura=tipo_struttura, amenita_selezionate=amenita_selezionate))
+        else:
+            flash('Inserisci delle date di inizio e fine soggiorno', category='error')
 
     return render_template("home.html", user=current_user, Citta=Citta, Tipo_Struttura=Tipo_Struttura, Amenita=Amenita)
 
 @views.route('/ricerca', methods=['GET', 'POST'])
 @login_required
 def ricerca():
-    citta = request.args.get('citta')
+    citta = request.args.getlist('citta')
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
     num_ospiti = request.args.get('num_ospiti')
     tipo_struttura = request.args.getlist('tipo_struttura')
     amenita_selezionate = request.args.getlist('amenita_selezionate')
 
+    if not citta:
+        citta = [c.nome for c in db.session.query(Citta).all()]
+
     if not tipo_struttura:
         tipo_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
+    
     if not amenita_selezionate:
-        amenita_selezionate = [a.nome for a in db.session.query(Amenita.nome).all()]
+        id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(Proprieta.id_citta==citta).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
+    else:
+        id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(servizi.c.id_amenita.in_(amenita_selezionate)).filter(Proprieta.id_citta.in_(citta)).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
     
     id_camere_occupate = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).distinct().subquery()
     
-    id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(servizi.c.id_amenita.in_(amenita_selezionate)).filter(Proprieta.id_citta==citta).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
-
     lista_proprieta = db.session.query(Proprieta).join(Camera).filter(Camera.id.not_in(id_camere_occupate), Proprieta.id.in_(id_proprieta_valide)).group_by(Proprieta.id).having(func.sum(Camera.num_ospiti)>=num_ospiti).all()
     
     return render_template("ricerca.html", user=current_user, citta=citta, lista_proprieta=lista_proprieta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti)

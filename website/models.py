@@ -65,7 +65,7 @@ class Amenita(db.Model):
 
     nome: Mapped[str] = mapped_column(String(256), primary_key=True)
 
-    proprieta: Mapped[Optional[List["Proprieta"]]] = relationship(secondary=servizi, back_populates="amenita")
+    proprieta: Mapped[Optional[List["Proprieta"]]] = relationship(secondary=servizi, back_populates="amenita", cascade="all, delete")
 
 spendibilita_coupons = db.Table(
     "spendibilita_coupons",
