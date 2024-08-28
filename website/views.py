@@ -46,9 +46,9 @@ def ricerca():
         tipo_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
     
     if not amenita_selezionate:
-        id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(Proprieta.id_citta==citta).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
+        id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(Proprieta.id_citta.in_(citta)).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
     else:
-        id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(servizi.c.id_amenita.in_(amenita_selezionate)).filter(Proprieta.id_citta.in_(citta)).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
+        id_proprieta_valide = db.session.query(Proprieta.id).outerjoin(servizi).filter(servizi.c.id_amenita.in_(amenita_selezionate)).group_by(Proprieta.id).having(func.count()==len(amenita_selezionate)).filter(Proprieta.id_citta.in_(citta)).filter(Proprieta.id_tipo_struttura.in_(tipo_struttura)).distinct().subquery()
     
     id_camere_occupate = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).distinct().subquery()
     
@@ -339,7 +339,7 @@ def rimuovi_proprieta():
     id_proprieta = obj['id_proprieta']
 
     proprieta = Proprieta.query.get(id_proprieta)
-    soggiorni = db.session.query(Soggiorno).outerjoin(occupazioni).join(Camera).filter(Camera.id_proprieta==id_proprieta).distinct().all()
+    soggiorni = db.session.query(Soggiorno).outerjoin(Soggiorno.camere).filter(Camera.id_proprieta==id_proprieta, Soggiorno.check_in >= datetime.datetime.now()).distinct().all()
     db.session.delete(proprieta)
     for soggiorno in soggiorni:
         db.session.delete(soggiorno)
@@ -349,10 +349,11 @@ def rimuovi_proprieta():
 @views.route('/migliori_host', methods=['GET', 'POST'])
 @login_required
 def migliori_host():
-    valutazione_media_globale = db.session.query(func.avg(Proprietario.valutazione_media)).scalar()
+    valutazione_media_globale = db.session.query(func.avg(Proprietario.valutazione_media)).subquery()
     proprietari = db.session.query(Proprietario)\
         .order_by(((Proprietario.valutazione_media * Proprietario.num_valutazioni) / (Proprietario.num_valutazioni + 10)) + \
-                            ((10 * valutazione_media_globale) / (Proprietario.num_valutazioni + 10))).limit(10)
+                            ((10 * valutazione_media_globale.as_scalar()) / (Proprietario.num_valutazioni + 10)))\
+        .limit(10)
     
     return render_template("migliori_host.html", user=current_user, proprietari=proprietari)
 
@@ -363,18 +364,35 @@ def citta_popolari():
     end_date = datetime.datetime.now()
 
     citta = db.session.query(Proprieta.id_citta.label('citta'), func.count(func.distinct(Soggiorno.id)).label('numero_soggiorni'))\
-        .outerjoin(occupazioni)\
-        .outerjoin(Camera)\
-        .outerjoin(Proprieta)\
-        .group_by(Proprieta.id)\
+        .outerjoin(Proprieta.camere)\
+        .outerjoin(Camera.soggiorni)\
         .filter(Soggiorno.check_in >= start_date, Soggiorno.check_out <= end_date)\
-        .order_by(func.count(func.distinct(Soggiorno.id)).desc())
+        .group_by(Proprieta.id)\
+        .order_by(func.count(func.distinct(Soggiorno.id)).desc())\
+        .limit(5)
 
     return render_template("citta_popolari.html", user=current_user, citta=citta)
 
 @views.route('/migliori_proprieta', methods=['GET', 'POST'])
 @login_required
 def migliori_proprieta():
-    proprieta = db.session.query(Proprieta).order_by(Proprieta.valutazione_media.desc()).limit(10)
+    valutazione_media_globale = db.session.query(func.avg(Proprieta.valutazione_media)).subquery()
+    proprieta = db.session.query(Proprieta)\
+        .order_by(((Proprieta.valutazione_media * Proprietario.num_valutazioni) / (Proprieta.num_valutazioni + 10)) + \
+                            ((10 * valutazione_media_globale.as_scalar()) / (Proprieta.num_valutazioni + 10)))\
+        .limit(10)
 
     return render_template("migliori_proprieta.html", user=current_user, proprieta=proprieta)
+
+@views.route('/amenita_apprezzate', methods=['GET', 'POST'])
+@login_required
+def amenita_apprezzate():
+    soglia_num_valutazioni = 0
+    soglia_valutazione_media = 0
+
+    amenita = db.session.query(Amenita).join(Amenita.proprieta)\
+        .filter(Proprieta.valutazione_media >= soglia_valutazione_media, Proprieta.num_valutazioni >= soglia_num_valutazioni)\
+        .group_by(Amenita.nome)\
+        .order_by(func.count().desc())
+
+    return render_template("amenita_apprezzate.html", user=current_user, amenita=amenita)
