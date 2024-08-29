@@ -133,7 +133,7 @@ class Soggiorno(db.Model):
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
 
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
-    camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni", cascade="all, delete")
+    camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni")
     pagamento: Mapped["Pagamento"] = relationship(back_populates="soggiorno")
 
 class Recensione(db.Model):
@@ -150,18 +150,24 @@ class Recensione(db.Model):
 
     def getStringaData(self):
         return self.data_ultima_modifica.strftime("%d %B %Y")
+    
+class Tipo_Metodo_Pagamento(Enum):
+    CARTA = 1
+    PAYPAL = 2
 
 class Metodo_Pagamento(db.Model):
     __tablename__ = "metodi_pagamento"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
+    tipo: Mapped[int] = mapped_column()
 
     utente: Mapped["Utente"] = relationship(back_populates="metodi_pagamento")
     proprietario: Mapped[Optional["Proprietario"]] = relationship(back_populates="metodo_accredito")
     paypal: Mapped[Optional["Paypal"]] = relationship(back_populates="metodo_pagamento")
     carta: Mapped[Optional["Carta"]] = relationship(back_populates="metodo_pagamento")
-    pagamenti: Mapped[Optional[List["Pagamento"]]] = relationship(back_populates="metodo_pagamento")
+    addebiti: Mapped[Optional[List["Pagamento"]]] = relationship(back_populates="metodo_addebito", foreign_keys="Pagamento.id_metodo_addebito")
+    accrediti: Mapped[Optional[List["Pagamento"]]] = relationship(back_populates="metodo_accredito", foreign_keys="Pagamento.id_metodo_accredito")
 
 class Paypal(db.Model):
     __tablename__ = "paypals"
@@ -195,13 +201,15 @@ class Pagamento(db.Model):
     __tablename__ = "pagamenti"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    id_metodo_pagamento: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
+    id_metodo_addebito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
+    id_metodo_accredito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_coupon: Mapped[int] = mapped_column(ForeignKey("coupons.id"), unique=True, nullable=True)
     data_creazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     id_soggiorno: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), nullable=True)
 
     soggiorno: Mapped["Soggiorno"] = relationship(back_populates="pagamento")
-    metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="pagamenti")
+    metodo_addebito: Mapped["Metodo_Pagamento"] = relationship(back_populates="addebiti", foreign_keys=[id_metodo_addebito])
+    metodo_accredito: Mapped["Metodo_Pagamento"] = relationship(back_populates="accrediti", foreign_keys=[id_metodo_accredito])
     coupon: Mapped[Optional["Coupon"]] = relationship(back_populates="pagamento")
 
     def getTotalePagato(self):

@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from .models import Carta, Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione, spendibilita_coupons
+from .models import Carta, Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Metodo_Pagamento, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione, spendibilita_coupons
 from . import db
 from sqlalchemy import delete, text, or_, and_, func
 import datetime
@@ -68,39 +68,39 @@ def proprieta():
     check_in = request.args.get('check_in')
     check_out = request.args.get('check_out')
     num_ospiti = request.args.get('num_ospiti')
-    id_proprieta = request.args.get('proprieta_id')
+    id_proprieta = request.args.get('id_proprieta')
     proprieta = Proprieta.query.get(id_proprieta)
 
     if request.method == 'POST':
         camere = []
         prezzo = 0
         lista_camere_prenotate = request.form.getlist('camere_prenotate')
+        id_metodo_addebito = request.form.get('id_metodo_pagamento')
+        id_coupon = request.form.get('id_coupon')
         for id in lista_camere_prenotate:
             camera = Camera.query.get(id)
             camere.append(camera)
             prezzo += camera.prezzo_per_notte
-        if len(camere) == 0:
-            flash('Devi selezionare almeno una camera.', category='error')
+        if len(camere) == 0 and not id_metodo_addebito:
+            flash('Errore.', category='error')
         else:
             soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo=prezzo, id_utente=current_user.id, utente=current_user, camere=camere)
             db.session.add(soggiorno)
             db.session.commit()
 
-            id_metodo_pagamento = request.form.get('id_metodo_pagamento')
-            id_coupon = request.form.get('id_coupon')
+            id_metodo_accredito = proprieta.proprietario.metodo_accredito.id
+            pagamento = Pagamento(id_soggiorno=soggiorno.id, 
+                                  id_metodo_addebito=id_metodo_addebito, 
+                                  id_metodo_accredito = id_metodo_accredito,
+                                  id_coupon=id_coupon)
+            if id_coupon:
+                coupon = Coupon.query.get(id_coupon)
+                pagamento.coupon = coupon
+            db.session.add(pagamento)
+            db.session.commit()
 
-            if not id_metodo_pagamento:
-                flash('Devi selezionare un metodo di pagamento.', category='error')
-            else:
-                pagamento = Pagamento(id_soggiorno=soggiorno.id, id_metodo_pagamento=id_metodo_pagamento, id_coupon=id_coupon)
-                if id_coupon:
-                    coupon = Coupon.query.get(id_coupon)
-                    pagamento.coupon = coupon
-                db.session.add(pagamento)
-                db.session.commit()
-
-                flash('Prenotazione effettuata con successo.', category='success')
-                return redirect(url_for('views.prenotazioni'))
+            flash('Prenotazione effettuata con successo.', category='success')
+            return redirect(url_for('views.prenotazioni'))
     
     id_camere_occupate = db.session.query(Camera.id).outerjoin(occupazioni).outerjoin(Soggiorno).filter(check_in<=Soggiorno.check_out, check_out>=Soggiorno.check_in).distinct().subquery()
     
@@ -180,7 +180,7 @@ def aggiungi_carta():
     if request.method == 'POST':
         numero_carta = request.form.get('numero_carta')
         data_scadenza = request.form.get('data_scadenza')
-        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id)
+        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA.value)
         carta = Carta(numero_carta=numero_carta, data_scadenza=data_scadenza)
         carta.id = metodo_pagamento.id
         metodo_pagamento.carta = carta
@@ -204,7 +204,7 @@ def aggiungi_paypal():
     if request.method == 'POST':
 
         email = request.form.get('email')
-        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id)
+        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.PAYPAL.value)
         paypal = Paypal(email=email)
         paypal.id = metodo_pagamento.id
         metodo_pagamento.paypal = paypal
