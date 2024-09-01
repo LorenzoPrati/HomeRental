@@ -134,6 +134,12 @@ class Soggiorno(db.Model):
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
     camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni")
     pagamento: Mapped["Pagamento"] = relationship(back_populates="soggiorno")
+    
+    def get_stringa_check_in(self):
+        return self.check_in.strftime("%d %b %Y %H:%M")
+    
+    def get_stringa_check_out(self):
+        return self.check_out.strftime("%d %b %Y %H:%M")
 
 class Recensione(db.Model):
     __tablename__ = "recensioni"

@@ -19,7 +19,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for soggiorno in user.soggiorni %}
+            {% for soggiorno in soggiorni %}
             {% if soggiorno.camere %}
             <tr>
                 <td>
@@ -27,8 +27,8 @@
                 </td>
                 <td>{{soggiorno.camere[0].proprieta.proprietario.utente.nome}} {{soggiorno.camere[0].proprieta.proprietario.utente.cognome}}</td>
                 <td>{{soggiorno.camere[0].proprieta.proprietario.telefono}}</td>
-                <td>{{soggiorno.check_in}}</td>
-                <td>{{soggiorno.check_out}}</td>
+                <td>{{soggiorno.get_stringa_check_in()}}</td>
+                <td>{{soggiorno.get_stringa_check_out()}}</td>
                 <td>{{soggiorno.num_ospiti}}</td>
                 <td>
                     {% for camera in soggiorno.camere %}

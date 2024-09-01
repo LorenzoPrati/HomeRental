@@ -30,9 +30,7 @@
 <br />
 <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Aggiungi una proprieta</a>
 {% else %}
-<h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.<br />Aggiungi una proprieta' e un metodo di
-    pagamento su cui ricevere gli accrediti per diventarlo.
-</h2>
+<h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.</h2>
 <br />
 {% if user.metodi_pagamento %}
 <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary btn-lg btn-block">Diventa proprietario</a>
