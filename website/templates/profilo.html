@@ -16,8 +16,8 @@
     <div class="col-4 p-2">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">{{coupon.percentuale_sconto}}%</h5>
-                {% for tipo_struttura in coupon.tipi_struttura %}
+                <h5 class="card-title">Sconto del {{coupon.percentuale_sconto}}%</h5>
+                applicabile su {% for tipo_struttura in coupon.tipi_struttura %}
                 {{tipo_struttura.nome}}, 
                 {% endfor %}
             </div>

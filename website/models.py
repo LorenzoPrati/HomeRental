@@ -129,7 +129,6 @@ class Soggiorno(db.Model):
     check_in: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     check_out: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     num_ospiti: Mapped[int] = mapped_column()
-    prezzo: Mapped[int] = mapped_column()
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
 
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
@@ -152,7 +151,7 @@ class Recensione(db.Model):
         return self.data_ultima_modifica.strftime("%d %B %Y")
     
 class Tipo_Metodo_Pagamento(Enum):
-    CARTA = 1
+    CARTA_CREDITO = 1
     PAYPAL = 2
 
 class Metodo_Pagamento(db.Model):
@@ -165,9 +164,16 @@ class Metodo_Pagamento(db.Model):
     utente: Mapped["Utente"] = relationship(back_populates="metodi_pagamento")
     proprietario: Mapped[Optional["Proprietario"]] = relationship(back_populates="metodo_accredito")
     paypal: Mapped[Optional["Paypal"]] = relationship(back_populates="metodo_pagamento")
-    carta: Mapped[Optional["Carta"]] = relationship(back_populates="metodo_pagamento")
-    addebiti: Mapped[Optional[List["Pagamento"]]] = relationship(back_populates="metodo_addebito", foreign_keys="Pagamento.id_metodo_addebito")
-    accrediti: Mapped[Optional[List["Pagamento"]]] = relationship(back_populates="metodo_accredito", foreign_keys="Pagamento.id_metodo_accredito")
+    carta_credito: Mapped[Optional["Carta_Credito"]] = relationship(back_populates="metodo_pagamento")
+    pagamenti: Mapped[Optional[List["Pagamento"]]] = relationship(back_populates="metodo_pagamento")
+
+    def get_nome(self):
+        if self.tipo == Tipo_Metodo_Pagamento.CARTA_CREDITO.value:
+            meta = len(self.carta_credito.numero_carta) // 2
+            return self.carta_credito.numero_carta[:meta] + '*' * meta
+        else:
+            meta = len(self.paypal.email) // 2
+            return self.paypal.email[:meta] + '*' * meta
 
 class Paypal(db.Model):
     __tablename__ = "paypals"
@@ -177,14 +183,16 @@ class Paypal(db.Model):
 
     metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="paypal")
 
-class Carta(db.Model):
-    __tablename__ = "carte"
+class Carta_Credito(db.Model):
+    __tablename__ = "carte_credito"
 
     id: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"), primary_key=True)
     numero_carta: Mapped[str] = mapped_column(String(256), unique=True)
+    nome: Mapped[str] = mapped_column(String(256))
+    cognome: Mapped[str] = mapped_column(String(256))
     data_scadenza: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     
-    metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="carta")
+    metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="carta_credito")
 
 class Coupon(db.Model):
     __tablename__ = "coupons"
@@ -201,16 +209,15 @@ class Pagamento(db.Model):
     __tablename__ = "pagamenti"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    id_metodo_addebito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
-    id_metodo_accredito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
+    id_metodo_pagamento: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_coupon: Mapped[int] = mapped_column(ForeignKey("coupons.id"), unique=True, nullable=True)
     data_creazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     id_soggiorno: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), nullable=True)
+    totale: Mapped[int] = mapped_column()
 
     soggiorno: Mapped["Soggiorno"] = relationship(back_populates="pagamento")
-    metodo_addebito: Mapped["Metodo_Pagamento"] = relationship(back_populates="addebiti", foreign_keys=[id_metodo_addebito])
-    metodo_accredito: Mapped["Metodo_Pagamento"] = relationship(back_populates="accrediti", foreign_keys=[id_metodo_accredito])
+    metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="pagamenti")
     coupon: Mapped[Optional["Coupon"]] = relationship(back_populates="pagamento")
 
-    def getTotalePagato(self):
-        return self.soggiorno.prezzo - (self.soggiorno.prezzo * self.coupon.percentuale_sconto / 100)
+    def get_totale_pagato(self):
+        return self.totale - (self.totale * self.coupon.percentuale_sconto / 100)

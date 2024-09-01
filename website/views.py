@@ -1,8 +1,8 @@
-from flask import Blueprint, render_template, request, url_for, flash, redirect, session, json, jsonify
-from flask_login import login_user, login_required, logout_user, current_user
-from .models import Carta, Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Metodo_Pagamento, Tipo_Struttura, Utente, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione, spendibilita_coupons
+from flask import Blueprint, render_template, request, url_for, flash, redirect, json, jsonify
+from flask_login import login_required, current_user
+from .models import Carta_Credito, Coupon, Metodo_Pagamento, Pagamento, Paypal, Tipo_Metodo_Pagamento, Tipo_Struttura, Proprieta, Proprietario, Camera, Amenita, servizi, Citta, Soggiorno, occupazioni, Recensione, spendibilita_coupons
 from . import db
-from sqlalchemy import delete, text, or_, and_, func
+from sqlalchemy import func
 import datetime
 
 views = Blueprint('views', __name__)
@@ -75,27 +75,32 @@ def proprieta():
         camere = []
         prezzo = 0
         lista_camere_prenotate = request.form.getlist('camere_prenotate')
-        id_metodo_addebito = request.form.get('id_metodo_pagamento')
+        id_metodo_pagamento = request.form.get('id_metodo_pagamento')
         id_coupon = request.form.get('id_coupon')
+
+        start_date = datetime.datetime.strptime(check_in, '%Y-%m-%dT%H:%M')
+        end_date = datetime.datetime.strptime(check_out, '%Y-%m-%dT%H:%M')
+        delta = end_date - start_date
+        num_notti = delta.days
+
         for id in lista_camere_prenotate:
             camera = Camera.query.get(id)
             camere.append(camera)
-            prezzo += camera.prezzo_per_notte
-        if len(camere) == 0 and not id_metodo_addebito:
+            prezzo += (camera.prezzo_per_notte * num_notti)
+        if len(camere) == 0 and not id_metodo_pagamento:
             flash('Errore.', category='error')
         else:
             soggiorno = Soggiorno(check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, prezzo=prezzo, id_utente=current_user.id, utente=current_user, camere=camere)
             db.session.add(soggiorno)
             db.session.commit()
 
-            id_metodo_accredito = proprieta.proprietario.metodo_accredito.id
             pagamento = Pagamento(id_soggiorno=soggiorno.id, 
-                                  id_metodo_addebito=id_metodo_addebito, 
-                                  id_metodo_accredito = id_metodo_accredito,
+                                  id_metodo_pagamento = id_metodo_pagamento,
                                   id_coupon=id_coupon)
             if id_coupon:
                 coupon = Coupon.query.get(id_coupon)
                 pagamento.coupon = coupon
+
             db.session.add(pagamento)
             db.session.commit()
 
@@ -179,11 +184,13 @@ def aggiungi_carta():
 
     if request.method == 'POST':
         numero_carta = request.form.get('numero_carta')
+        nome = request.form.get('nome')
+        cognome = request.form.get('cognome')
         data_scadenza = request.form.get('data_scadenza')
-        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA.value)
-        carta = Carta(numero_carta=numero_carta, data_scadenza=data_scadenza)
+        metodo_pagamento = Metodo_Pagamento(id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.value)
+        carta = Carta_Credito(numero_carta=numero_carta, nome=nome, cognome=cognome, data_scadenza=data_scadenza)
         carta.id = metodo_pagamento.id
-        metodo_pagamento.carta = carta
+        metodo_pagamento.carta_credito = carta
         metodo_pagamento.utente = current_user
         db.session.add(metodo_pagamento)
         db.session.commit()

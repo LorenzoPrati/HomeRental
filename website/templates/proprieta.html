@@ -123,11 +123,7 @@
                     <select class="form-control" id="id_metodo_pagamento" , name="id_metodo_pagamento">
                         <option selected disabled>Scegli il metodo di pagamento</option>
                         {% for metodo_pagamento in user.metodi_pagamento %}
-                        {% if metodo_pagamento.paypal %}
-                        <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.paypal.email}}</option>
-                        {% else %}
-                        <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.carta.numero_carta}}</option>
-                        {% endif %}
+                        <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.get_nome}}</option>
                         {% endfor %}
                     </select>
                 </div>

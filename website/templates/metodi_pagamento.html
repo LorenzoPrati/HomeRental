@@ -4,17 +4,13 @@
 {% block content %}
 {% if user.metodi_pagamento %}
 <h2 align="center">I tuoi metodi di pagamento</h2>
-<div class="d-flex justify-content-center p-4">
-<ul>
-{% for metodo_pagamento in user.metodi_pagamento %}
-{% if metodo_pagamento.paypal %}
-<li>{{metodo_pagamento.paypal.email}}</li>
-{% else %}
-<li>{{metodo_pagamento.carta.numero_carta}}</li>
-{% endif %}
-{% endfor %}
-</ul>
-</div>
+<div class="d-flex flex-row pt-4 justify-content-center">
+    <ul class="list-group">
+        {% for metodo_pagamento in user.metodi_pagamento %}
+        <li class="list-group-item">{{metodo_pagamento.get_nome()}}</li>
+        {% endfor %}
+    </ul>
+    </div>
 <hr>
 {% endif %}
 

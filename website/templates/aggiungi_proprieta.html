@@ -18,11 +18,7 @@
     <select class="form-control" id="metodo_pagamento" , name="metodo_pagamento">
         <option selected>Scegli il metodo di accredito</option>
         {% for metodo_pagamento in user.metodi_pagamento %}
-        {% if metodo_pagamento.paypal %}
-        <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.paypal.email}}</option>
-        {% else %}
-        <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.carta.numero_carta}}</option>
-        {% endif %}
+        <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.get_nome()}}</option>
         {% endfor %}
     </select>
     <hr>
