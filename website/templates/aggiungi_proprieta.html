@@ -26,7 +26,7 @@
     <div class="form-group">
         <label for="citta">Citta</label>
         <select class="form-control" id="citta" name="citta">
-            {% for citta in lista_citta %}
+            {% for citta in citta %}
             <option value="{{citta.nome}}">{{citta.nome}}</option>
             {% endfor %}
         </select>
@@ -43,7 +43,7 @@
     <div class="form-group">
         <label for="tipo_struttura">Tipo Struttura</label>
         <select class="form-control" id="tipo_struttura" name="tipo_struttura">
-            {% for tipo_struttura in lista_tipi_struttura %}
+            {% for tipo_struttura in tipi_struttura %}
             <option value="{{tipo_struttura.nome}}">{{tipo_struttura.nome}}</option>
             {% endfor %}
         </select>

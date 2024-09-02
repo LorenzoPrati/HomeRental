@@ -44,7 +44,7 @@ def home():
         check_out = request.form.get("check_out")
         num_ospiti = request.form.get("num_ospiti")
         tipo_struttura = request.form.get("tipo_struttura")
-        amenita_selezionate = request.form.getlist("amenita_selezionate")
+        amenita = request.form.getlist("amenita")
 
         if check_in and check_out:
             if not num_ospiti:
@@ -59,7 +59,7 @@ def home():
                     check_out=check_out,
                     num_ospiti=num_ospiti,
                     tipo_struttura=tipo_struttura,
-                    amenita_selezionate=amenita_selezionate,
+                    amenita_selezionate=amenita,
                 )
             )
         else:
@@ -86,14 +86,14 @@ def ricerca():
     check_out = request.args.get("check_out")
     num_ospiti = request.args.get("num_ospiti")
     tipo_struttura = request.args.getlist("tipo_struttura")
-    amenita_selezionate = request.args.getlist("amenita_selezionate")
+    amenita = request.args.getlist("amenita")
 
     if not citta:
         citta = [c.nome for c in db.session.query(Citta).all()]
     if not tipo_struttura:
         tipo_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
 
-    if not amenita_selezionate:
+    if not amenita:
         id_proprieta_valide = (
             db.session.query(Proprieta.id)
             .outerjoin(servizi)
@@ -106,9 +106,9 @@ def ricerca():
         id_proprieta_valide = (
             db.session.query(Proprieta.id)
             .outerjoin(servizi)
-            .filter(servizi.c.id_amenita.in_(amenita_selezionate))
+            .filter(servizi.c.id_amenita.in_(amenita))
             .group_by(Proprieta.id)
-            .having(func.count() == len(amenita_selezionate))
+            .having(func.count() == len(amenita))
             .filter(Proprieta.id_citta.in_(citta))
             .filter(Proprieta.id_tipo_struttura.in_(tipo_struttura))
             .distinct()
@@ -150,27 +150,28 @@ def ricerca():
     )
 
 
-@views.route("/prenotazioni")
+@views.route("/tuoi_soggiorni")
 @login_required
-def prenotazioni():
+def tuoi_soggiorni():
     soggiorni = (
         db.session.query(Soggiorno)
         .filter(Soggiorno.id_utente == current_user.id)
         .join(Pagamento)
         .order_by(Pagamento.data_creazione.desc())
+        .all()
     )
 
     return render_template(
-        "prenotazioni.html",
+        "tuoi_soggiorni.html",
         user=current_user,
         soggiorni=soggiorni,
         now=datetime.datetime.now(),
     )
 
 
-@views.route("/proprieta", methods=["GET", "POST"])
+@views.route("/prenota_proprieta", methods=["GET", "POST"])
 @login_required
-def proprieta():
+def prenota_proprieta():
     citta = request.args.get("citta")
     check_in = request.args.get("check_in")
     check_out = request.args.get("check_out")
@@ -179,9 +180,7 @@ def proprieta():
     proprieta = Proprieta.query.get(id_proprieta)
 
     if request.method == "POST":
-        camere = []
-        totale = 0
-        lista_camere_prenotate = request.form.getlist("camere_prenotate")
+        id_camere = request.form.getlist("camere_prenotate")
         id_metodo_pagamento = request.form.get("id_metodo_pagamento")
         id_coupon = request.form.get("id_coupon")
 
@@ -190,12 +189,24 @@ def proprieta():
         delta = end_date - start_date
         num_notti = delta.days
 
-        for id in lista_camere_prenotate:
+        camere = db.session.query(Camera).filter(Camera.id.in_(id_camere)).all()
+
+        totale = 0
+        for c in camere:
+            totale += c.prezzo_per_notte * num_notti
+
+        """
+        for id in camere:
             camera = Camera.query.get(id)
             camere.append(camera)
             totale += camera.prezzo_per_notte * num_notti
-        if len(camere) == 0 and not id_metodo_pagamento:
-            flash("Errore.", category="error")
+        """
+
+        if not camere or not id_metodo_pagamento:
+            flash(
+                "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere, metodo di pagamento).",
+                category="error",
+            )
         else:
             soggiorno = Soggiorno(
                 check_in=check_in,
@@ -212,19 +223,19 @@ def proprieta():
                 totale=totale,
                 id_soggiorno=soggiorno.id,
                 id_metodo_pagamento=id_metodo_pagamento,
-                id_coupon=id_coupon,
             )
             if id_coupon:
+                pagamento.id_coupon = id_coupon
                 coupon = Coupon.query.get(id_coupon)
                 pagamento.coupon = coupon
-
             db.session.add(pagamento)
             db.session.commit()
 
-            flash("Prenotazione effettuata con successo.", category="success")
-            return redirect(url_for("views.prenotazioni"))
+            flash("Prenotazione riuscita.", category="success")
 
-    camere_libere = (
+            return redirect(url_for("views.tuoi_soggiorni"))
+
+    camere = (
         db.session.query(Camera)
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
@@ -252,14 +263,14 @@ def proprieta():
     )
 
     return render_template(
-        "proprieta.html",
+        "prenota_proprieta.html",
         user=current_user,
         citta=citta,
         check_in=check_in,
         check_out=check_out,
         num_ospiti=num_ospiti,
         proprieta=proprieta,
-        camere_libere=camere_libere,
+        camere=camere,
         coupons=coupons,
     )
 
@@ -269,43 +280,54 @@ def proprieta():
 def scrivi_recensione():
     id_proprieta = request.args.get("id_proprieta")
     vecchia_recensione = Recensione.query.get((current_user.id, id_proprieta))
+
     if request.method == "POST":
         valutazione = request.form.get("valutazione")
         testo = request.form.get("testo")
         proprieta = Proprieta.query.get(id_proprieta)
 
         if vecchia_recensione:
-            vecchia_recensione.testo = testo
+
             proprieta.valutazione_media = (
                 proprieta.valutazione_media * proprieta.num_valutazioni
                 - vecchia_recensione.valutazione
                 + int(valutazione)
             ) / proprieta.num_valutazioni
+
+            vecchia_recensione.testo = testo
             vecchia_recensione.valutazione = valutazione
             vecchia_recensione.data_ultima_modifica = datetime.datetime.now()
+
             db.session.commit()
+
             flash("Recensione modificata.", category="success")
         else:
             recensione = Recensione(
                 valutazione=valutazione,
                 testo=testo,
+                id_utente=current_user.id,
+                id_proprieta=proprieta.id,
                 utente=current_user,
                 proprieta=proprieta,
                 data_ultima_modifica=datetime.datetime.now(),
             )
+
             proprieta.valutazione_media = (
                 proprieta.valutazione_media * proprieta.num_valutazioni
                 + int(valutazione)
             ) / (proprieta.num_valutazioni + 1)
             proprieta.num_valutazioni += 1
+
             proprietario = proprieta.proprietario
             proprietario.valutazione_media = (
                 proprietario.valutazione_media * proprietario.num_valutazioni
                 + proprieta.valutazione_media
             ) / (proprietario.num_valutazioni + 1)
             proprietario.num_valutazioni += 1
+
             db.session.add(recensione)
             db.session.commit()
+
             flash("Recensione pubblicata.", category="success")
 
     return render_template(
@@ -323,15 +345,22 @@ def profilo():
         current_user.proprietario.biografia = biografia
         db.session.commit()
 
-    return render_template("profilo.html", user=current_user, Coupon=Coupon)
+    coupons = (
+        db.session.query(Coupon)
+        .outerjoin(Pagamento)
+        .filter(Coupon.id_utente == current_user.id, Pagamento.id.is_(None))
+        .all()
+    )
+
+    return render_template("profilo.html", user=current_user, coupons=coupons)
 
 
-@views.route("/dashboard_proprietario", methods=["GET", "POST"])
+@views.route("/tue_proprieta", methods=["GET", "POST"])
 @login_required
-def dashboard_proprietario():
+def tue_proprieta():
     flag = True
 
-    return render_template("dashboard_proprietario.html", user=current_user, flag=flag)
+    return render_template("tue_proprieta.html", user=current_user, flag=flag)
 
 
 @views.route("/pagamento", methods=["GET", "POST"])
@@ -361,9 +390,11 @@ def aggiungi_carta():
         nome = request.form.get("nome")
         cognome = request.form.get("cognome")
         data_scadenza = request.form.get("data_scadenza")
+
         metodo_pagamento = Metodo_Pagamento(
             id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.value
         )
+
         carta = Carta_Credito(
             numero_carta=numero_carta,
             nome=nome,
@@ -371,11 +402,14 @@ def aggiungi_carta():
             data_scadenza=data_scadenza,
         )
         carta.id = metodo_pagamento.id
+
         metodo_pagamento.carta_credito = carta
         metodo_pagamento.utente = current_user
+
         db.session.add(metodo_pagamento)
         db.session.commit()
-        flash("Metodo di pagamento aggiunto con successo.", category="success")
+
+        flash("Carta di credito aggiunta.", category="success")
 
         if flag:
             return redirect(url_for("views.aggiungi_proprieta"))
@@ -391,18 +425,21 @@ def aggiungi_paypal():
     flag = request.args.get("flag")
 
     if request.method == "POST":
-
         email = request.form.get("email")
+
         metodo_pagamento = Metodo_Pagamento(
             id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.PAYPAL.value
         )
+
         paypal = Paypal(email=email)
         paypal.id = metodo_pagamento.id
+
         metodo_pagamento.paypal = paypal
         metodo_pagamento.utente = current_user
+
         db.session.add(metodo_pagamento)
         db.session.commit()
-        flash("Metodo di pagamento aggiunto con successo.", category="success")
+        flash("Conto Paypal aggiunto.", category="success")
 
         if flag:
             return redirect(url_for("views.aggiungi_proprieta"))
@@ -412,10 +449,11 @@ def aggiungi_paypal():
     return render_template("aggiungi_paypal.html", user=current_user)
 
 
-@views.route("/gestisci_prenotazioni", methods=["GET", "POST"])
+@views.route("/soggiorni_tua_proprieta", methods=["GET", "POST"])
 @login_required
-def gestisci_prenotazioni():
+def soggiorni_tua_proprieta():
     proprieta_id = request.args.get("id")
+
     soggiorni = (
         db.session.query(Soggiorno)
         .join(occupazioni)
@@ -425,23 +463,26 @@ def gestisci_prenotazioni():
     )
 
     return render_template(
-        "gestisci_prenotazioni.html", user=current_user, soggiorni=soggiorni
+        "soggiorni_tua_proprieta.html", user=current_user, soggiorni=soggiorni
     )
 
 
-@views.route("/recensioni", methods=["GET", "POST"])
+@views.route("/recensioni_tua_proprieta", methods=["GET", "POST"])
 @login_required
-def recensioni():
+def recensioni_tua_proprieta():
     id_proprieta = request.args.get("id")
     proprieta = Proprieta.query.get(id_proprieta)
-    return render_template("recensioni.html", user=current_user, proprieta=proprieta)
+
+    return render_template(
+        "recensioni_tua_proprieta.html", user=current_user, proprieta=proprieta
+    )
 
 
 @views.route("/aggiungi_proprieta", methods=["GET", "POST"])
 @login_required
 def aggiungi_proprieta():
-    lista_citta = Citta.query.all()
-    lista_tipi_struttura = Tipo_Struttura.query.all()
+    citta = Citta.query.all()
+    tipi_struttura = Tipo_Struttura.query.all()
 
     if request.method == "POST":
         proprieta = Proprieta(
@@ -450,51 +491,61 @@ def aggiungi_proprieta():
             id_tipo_struttura=request.form.get("tipo_struttura"),
             descrizione=request.form.get("descrizione"),
         )
+
         if not current_user.proprietario:
-            id = request.form.get("metodo_pagamento")
+            id_metodo_pagamento = request.form.get("metodo_pagamento")
             biografia = request.form.get("biografia")
             telefono = request.form.get("telefono")
-            metodo = Metodo_Pagamento.query.get(id)
+
+            metodo_pagamento = Metodo_Pagamento.query.get(id_metodo_pagamento)
             proprietario = Proprietario(
                 id=current_user.id,
-                id_metodo_accredito=id,
+                id_metodo_accredito=id_metodo_pagamento,
                 biografia=biografia,
                 telefono=telefono,
             )
-            proprietario.metodo_accredito = metodo
+            proprietario.metodo_accredito = metodo_pagamento
             proprietario.utente = current_user
+
             db.session.add(proprietario)
-            flash("Profilo proprietario creato con successo.")
+
+            flash("Ora sei proprietario.", category="success")
+
         proprieta.id_proprietario = current_user.proprietario.id
         proprieta.proprietario = current_user.proprietario
+
         db.session.add(proprieta)
         db.session.commit()
-        flash("Property added successfully.", category="success")
-        return redirect(url_for("views.dashboard_proprietario"))
+
+        flash("Proprietà aggiunta.", category="success")
+
+        return redirect(url_for("views.tue_proprieta"))
 
     return render_template(
         "aggiungi_proprieta.html",
         user=current_user,
-        lista_citta=lista_citta,
-        lista_tipi_struttura=lista_tipi_struttura,
+        citta=citta,
+        tipi_struttura=tipi_struttura,
     )
 
 
-@views.route("/dettagli_proprieta_proprietario", methods=["GET", "POST"])
+@views.route("/modifica_proprieta", methods=["GET", "POST"])
 @login_required
-def dettagli_proprieta_proprietario():
+def modifica_proprieta():
     id = request.args.get("id")
+    proprieta = Proprieta.query.get(id)
+
+    amenita = Amenita.query.all()
+
     if request.method == "POST":
-        proprieta = Proprieta.query.get(id)
         proprieta.descrizione = request.form.get("descrizione")
         db.session.commit()
 
-    proprieta = Proprieta.query.get(id)
     return render_template(
-        "dettagli_proprieta_proprietario.html",
+        "modifica_proprieta.html",
         user=current_user,
         proprieta=proprieta,
-        Amenita=Amenita,
+        amenita=amenita,
     )
 
 
@@ -504,6 +555,7 @@ def rimuovi_camera():
     id_camera = obj["id_camera"]
 
     camera = Camera.query.get(id_camera)
+
     camere_da_modificare = (
         db.session.query(Camera)
         .filter(
@@ -512,11 +564,15 @@ def rimuovi_camera():
         )
         .all()
     )
+
     db.session.delete(camera)
     db.session.commit()
+
     for camera_da_modificare in camere_da_modificare:
         camera_da_modificare.ordinale -= 1
+
     db.session.commit()
+
     return jsonify({})
 
 
@@ -529,6 +585,7 @@ def aggiungi_camera():
 
     proprieta = Proprieta.query.get(id_proprieta)
     ordinale = len(proprieta.camere) + 1
+
     nuova_camera = Camera(
         id_proprieta=id_proprieta,
         ordinale=ordinale,
@@ -539,6 +596,7 @@ def aggiungi_camera():
 
     db.session.add(nuova_camera)
     db.session.commit()
+
     return jsonify({})
 
 
@@ -547,12 +605,15 @@ def remove_amenity():
     obj = json.loads(request.data)
     nome = obj["nome"]
     id_proprieta = obj["id_proprieta"]
+
     proprieta = Proprieta.query.get(id_proprieta)
     amenita = Amenita.query.get(nome)
 
     if amenita in proprieta.amenita:
         proprieta.amenita.remove(amenita)
+
     db.session.commit()
+
     return jsonify({})
 
 
@@ -564,8 +625,11 @@ def aggiungi_amenita():
 
     proprieta = Proprieta.query.get(id_proprieta)
     amenita = Amenita.query.get(nome)
+
     proprieta.amenita.append(amenita)
+
     db.session.commit()
+
     return jsonify({})
 
 
@@ -575,20 +639,24 @@ def rimuovi_proprieta():
     id_proprieta = obj["id_proprieta"]
 
     proprieta = Proprieta.query.get(id_proprieta)
+
     soggiorni = (
         db.session.query(Soggiorno)
-        .outerjoin(Soggiorno.camere)
+        .outerjoin(occupazioni)
+        .join(Camera)
         .filter(
             Camera.id_proprieta == id_proprieta,
-            Soggiorno.check_in >= datetime.datetime.now(),
+            Soggiorno.check_in > datetime.datetime.now(),
         )
         .distinct()
-        .all()
     )
+
     db.session.delete(proprieta)
+    
     for soggiorno in soggiorni:
         db.session.delete(soggiorno)
-    db.session.commit()
+        db.session.commit()
+
     return jsonify({})
 
 
@@ -598,6 +666,7 @@ def migliori_host():
     valutazione_media_globale = db.session.query(
         func.avg(Proprietario.valutazione_media)
     ).subquery()
+
     proprietari = (
         db.session.query(Proprietario)
         .order_by(
@@ -646,6 +715,7 @@ def migliori_proprieta():
     valutazione_media_globale = db.session.query(
         func.avg(Proprieta.valutazione_media)
     ).subquery()
+
     proprieta = (
         db.session.query(Proprieta)
         .order_by(
@@ -669,15 +739,12 @@ def migliori_proprieta():
 @views.route("/amenita_apprezzate", methods=["GET", "POST"])
 @login_required
 def amenita_apprezzate():
-    soglia_num_valutazioni = 0
-    soglia_valutazione_media = 0
-
     amenita = (
         db.session.query(Amenita)
         .join(Amenita.proprieta)
         .filter(
-            Proprieta.valutazione_media >= soglia_valutazione_media,
-            Proprieta.num_valutazioni >= soglia_num_valutazioni,
+            Proprieta.valutazione_media >= 4.5,
+            Proprieta.num_valutazioni >= 3,
         )
         .group_by(Amenita.nome)
         .order_by(func.count().desc())

@@ -11,7 +11,7 @@
                         <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
                         <h6>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</h6>
                         <h6>{{proprieta.valutazione_media}}<i class="bi bi-star-fill p-1"></i> ({{proprieta.num_valutazioni}})</h6>
-                        <a href="{{ url_for('views.proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, id_proprieta=proprieta.id) }}" class="btn btn-primary btn-lg btn-block">Scopri</a>
+                        <a href="{{ url_for('views.prenota_proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, id_proprieta=proprieta.id) }}" class="btn btn-primary btn-lg btn-block">Scopri</a>
                     </div>
                 </div>
             </div>

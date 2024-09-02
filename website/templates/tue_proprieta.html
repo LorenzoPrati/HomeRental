@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% block title %}Le tue proprietà{% endblock %}
 
 {% block content %}
 {% if user.proprietario %}
-<h2 align="center">Le tue proprieta</h2>
+<h2 align="center">Le tue proprietà</h2>
 <br />
 <div class="container">
     <div class="row">
@@ -12,13 +12,13 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
-                    <a href="{{ url_for('views.dettagli_proprieta_proprietario', id=proprieta.id) }}"
+                    <a href="{{ url_for('views.modifica_proprieta', id=proprieta.id) }}"
                         class="btn btn-primary">Modifica</a>
                     <button class="btn btn-primary" onclick="rimuovi_proprieta({{proprieta.id}})">Elimina</button>
-                    <a href="{{ url_for('views.gestisci_prenotazioni', id=proprieta.id) }}"
+                    <a href="{{ url_for('views.soggiorni_tua_proprieta', id=proprieta.id) }}"
                         class="btn btn-primary">Gestisci
                         prenotazioni</a>
-                    <a href="{{ url_for('views.recensioni', id=proprieta.id) }}"
+                    <a href="{{ url_for('views.recensioni_tua_proprieta', id=proprieta.id) }}"
                         class="btn btn-primary">Recensioni</a>
                 </div>
             </div>

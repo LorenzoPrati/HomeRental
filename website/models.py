@@ -40,7 +40,7 @@ class Proprietario(db.Model):
     biografia: Mapped[str] = mapped_column(String(500), nullable=True)
     telefono: Mapped[str] = mapped_column(String(256))
     valutazione_media: Mapped[int] = mapped_column(DECIMAL(2,1), default=0)
-    num_valutazioni: Mapped[int] = mapped_column(default=0)
+    num_valutazioni: Mapped[int] = mapped_column(Integer, default=0)
     id_metodo_accredito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
 
     utente: Mapped["Utente"] = relationship(back_populates="proprietario")
@@ -88,7 +88,7 @@ class Proprieta(db.Model):
     indirizzo: Mapped[str] = mapped_column(String(500))
     descrizione: Mapped[str] = mapped_column(String(500), nullable=True)
     valutazione_media: Mapped[int] = mapped_column(DECIMAL(2,1), default=0)
-    num_valutazioni: Mapped[int] = mapped_column(default=0)
+    num_valutazioni: Mapped[int] = mapped_column(Integer, default=0)
     data_creazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     id_citta: Mapped[str] = mapped_column(ForeignKey("citta.nome"))
     id_tipo_struttura: Mapped[str] = mapped_column(ForeignKey("tipi_struttura.nome"))
@@ -133,7 +133,7 @@ class Soggiorno(db.Model):
 
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
     camere: Mapped[List["Camera"]] = relationship(secondary=occupazioni, back_populates="soggiorni")
-    pagamento: Mapped["Pagamento"] = relationship(back_populates="soggiorno")
+    pagamento: Mapped["Pagamento"] = relationship(back_populates="soggiorno", passive_deletes=True)
     
     def get_stringa_check_in(self):
         return self.check_in.strftime("%d %b %Y %H:%M")
@@ -153,7 +153,7 @@ class Recensione(db.Model):
     utente: Mapped["Utente"] = relationship(back_populates="recensioni")
     proprieta: Mapped["Proprieta"] = relationship(back_populates="recensioni")
 
-    def getStringaData(self):
+    def get_stringa_data_ultima_modifica(self):
         return self.data_ultima_modifica.strftime("%d %B %Y")
     
 class Tipo_Metodo_Pagamento(Enum):

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Dettagli proprieta{% endblock %}
+{% block title %}Modifica proprietà{% endblock %}
 
 {% block content %}
     <h2 align="center"><i class="bi bi-geo-alt-fill mr-2"></i>{{ proprieta.citta.nome }}, {{proprieta.indirizzo}}</h2>
@@ -32,7 +32,7 @@
                     <label for="elimina_amenita">Aggiungi</label>
                     <select class="form-select" id="elimina_amenita" aria-label="Default select example">
                         <option selected>Open this select menu</option>
-                        {% for amenita in Amenita.query.all() %}
+                        {% for amenita in amenita %}
                             <option value='{{amenita.nome}}'>{{ amenita.nome }}</option>
                         {% endfor %}
                       </select>

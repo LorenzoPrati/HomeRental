@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Prenotazioni{% endblock %}
+{% block title %}I tuoi soggiorni{% endblock %}
 
 {% block content %}
-<h2 align="center">Le tue prenotazioni</i></h2>
+<h2 align="center">I tuoi soggorni</i></h2>
 <div class="container">
     <table class="table">
         <thead>
@@ -20,7 +20,7 @@
         </thead>
         <tbody>
             {% for soggiorno in soggiorni %}
-            {% if soggiorno.camere %}
+            
             <tr>
                 <td>
                     {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
@@ -44,7 +44,7 @@
                     {% endif %}
                 </td>
             </tr>
-            {% endif %}
+            
             {% endfor %}
         </tbody>
     </table>
