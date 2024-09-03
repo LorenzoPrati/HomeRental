@@ -195,16 +195,9 @@ def prenota_proprieta():
         for c in camere:
             totale += c.prezzo_per_notte * num_notti
 
-        """
-        for id in camere:
-            camera = Camera.query.get(id)
-            camere.append(camera)
-            totale += camera.prezzo_per_notte * num_notti
-        """
-
         if not camere or not id_metodo_pagamento:
             flash(
-                "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere, metodo di pagamento).",
+                "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere e/o metodo di pagamento).",
                 category="error",
             )
         else:
@@ -345,14 +338,7 @@ def profilo():
         current_user.proprietario.biografia = biografia
         db.session.commit()
 
-    coupons = (
-        db.session.query(Coupon)
-        .outerjoin(Pagamento)
-        .filter(Coupon.id_utente == current_user.id, Pagamento.id.is_(None))
-        .all()
-    )
-
-    return render_template("profilo.html", user=current_user, coupons=coupons)
+    return render_template("profilo.html", user=current_user)
 
 
 @views.route("/tue_proprieta", methods=["GET", "POST"])
@@ -376,6 +362,15 @@ def pagamento():
 @login_required
 def metodi_pagamento():
     flag = request.args.get("flag")
+    
+    if request.method == 'POST':
+        id_metodo_accredito = request.form.get('id_metodo_accredito')
+        metodo_accredito = Metodo_Pagamento.query.get(id_metodo_accredito)
+        current_user.proprietario.metodo_accredito = metodo_accredito
+        
+        flash('Metodo di accredito modificato.')
+        
+        db.session.commit()
 
     return render_template("metodi_pagamento.html", user=current_user, flag=flag)
 
@@ -550,6 +545,7 @@ def modifica_proprieta():
 
 
 @views.route("/rimuovi_camera", methods=["POST"])
+@login_required
 def rimuovi_camera():
     obj = json.loads(request.data)
     id_camera = obj["id_camera"]
@@ -564,7 +560,10 @@ def rimuovi_camera():
         )
         .all()
     )
-
+    
+    for s in camera.soggiorni:
+        db.session.delete(s)
+            
     db.session.delete(camera)
     db.session.commit()
 
@@ -577,6 +576,7 @@ def rimuovi_camera():
 
 
 @views.route("/aggiungi_camera", methods=["POST"])
+@login_required
 def aggiungi_camera():
     obj = json.loads(request.data)
     id_proprieta = obj["id_proprieta"]
@@ -652,7 +652,7 @@ def rimuovi_proprieta():
     )
 
     db.session.delete(proprieta)
-    
+
     for soggiorno in soggiorni:
         db.session.delete(soggiorno)
         db.session.commit()

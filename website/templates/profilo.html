@@ -9,9 +9,10 @@
 
 </div>
 <hr>
-<h4 align="center"><i class="bi bi-ticket-fill"></i><i class="bi bi-dot"></i>Coupons</h4>
+<h4 align="center"><i class="bi bi-ticket-fill mr-2"></i>Coupons utilizzabili</h4>
 <div class="row">
-    {% for coupon in coupons %}
+    {% for coupon in user.coupons %}
+    {% if not coupon.pagamento %}
     <div class="col-4 p-2">
         <div class="card">
             <div class="card-body">
@@ -22,6 +23,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
     {% endfor %}
 </div>
 
