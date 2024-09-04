@@ -34,7 +34,7 @@ function rimuovi_amenita(nome, id_proprieta) {
 }
 
 function aggiungi_amenita(id_proprieta) {
-    nome = document.getElementById('elimina_amenita').value
+    nome = document.getElementById('aggiungi_amenita').value
     fetch('/aggiungi_amenita', {
         method: 'POST',
         body: JSON.stringify(

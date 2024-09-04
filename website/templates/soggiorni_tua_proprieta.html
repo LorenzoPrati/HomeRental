@@ -2,14 +2,14 @@
 {% block title %}Prenotazioni{% endblock %}
 
 {% block content %}
-<h2 align="center">Le tue prenotazioni</i></h2>
-<div class="container">
-    <table class="table">
+<h2 align="center">Prenotazioni per {{proprieta.id_citta}}, {{proprieta.indirizzo}}</i></h2>
+<div class="row">
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th scope="col">Utente</th>
-                <th scope="col">Check In</th>
-                <th scope="col">Check Out</th>
+                <th scope="col">Check-In</th>
+                <th scope="col">Check-Out</th>
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
             </tr>
@@ -18,12 +18,12 @@
             {% for soggiorno in soggiorni %}
             <tr>
                 <td>{{soggiorno.utente.nome}} {{soggiorno.utente.cognome}}</td>
-                <td>{{soggiorno.check_in}}</td>
-                <td>{{soggiorno.check_out}}</td>
+                <td>{{soggiorno.get_stringa_check_in()}}</td>
+                <td>{{soggiorno.get_stringa_check_out()}}</td>
                 <td>{{soggiorno.num_ospiti}}</td>
                 <td>
                     {% for camera in soggiorno.camere %}
-                    {{camera.ordinale}}, 
+                     {{camera.ordinale}}
                     {% endfor %}
                 </td>
             </tr>

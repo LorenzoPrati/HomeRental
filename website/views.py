@@ -452,18 +452,19 @@ def aggiungi_paypal():
 @views.route("/soggiorni_tua_proprieta", methods=["GET", "POST"])
 @login_required
 def soggiorni_tua_proprieta():
-    proprieta_id = request.args.get("id")
+    id_proprieta = request.args.get("id")
+    proprieta = Proprieta.query.get(id_proprieta)
 
     soggiorni = (
         db.session.query(Soggiorno)
         .join(occupazioni)
         .join(Camera)
-        .filter(Camera.id_proprieta == proprieta_id)
+        .filter(Camera.id_proprieta == id_proprieta)
         .distinct()
     )
 
     return render_template(
-        "soggiorni_tua_proprieta.html", user=current_user, soggiorni=soggiorni
+        "soggiorni_tua_proprieta.html", user=current_user, proprieta=proprieta, soggiorni=soggiorni
     )
 
 

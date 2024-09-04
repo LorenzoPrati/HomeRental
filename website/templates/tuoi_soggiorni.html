@@ -2,49 +2,48 @@
 {% block title %}I tuoi soggiorni{% endblock %}
 
 {% block content %}
-<h2 align="center">I tuoi soggorni</i></h2>
-<div class="container">
-    <table class="table">
+<h2 align="center">Prenotazioni</i></h2>
+<div class="row">
+    <table class="table table-striped">
         <thead>
             <tr>
                 <th scope="col">Luogo</th>
                 <th scope="col">Host</th>
                 <th scope="col">Telefono</th>
-                <th scope="col">Check In</th>
-                <th scope="col">Check Out</th>
+                <th scope="col">Check-In</th>
+                <th scope="col">Check-Out</th>
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
                 <th scope="col">Pagamento</th>
-                <th scope="col">Valutazione</th>
+                <th scope="col">Recensisci</th>
             </tr>
         </thead>
         <tbody>
             {% for soggiorno in soggiorni %}
-            
             <tr>
                 <td>
                     {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
                 </td>
-                <td>{{soggiorno.camere[0].proprieta.proprietario.utente.nome}} {{soggiorno.camere[0].proprieta.proprietario.utente.cognome}}</td>
+                <td>{{soggiorno.camere[0].proprieta.proprietario.utente.nome}}
+                    {{soggiorno.camere[0].proprieta.proprietario.utente.cognome}}</td>
                 <td>{{soggiorno.camere[0].proprieta.proprietario.telefono}}</td>
                 <td>{{soggiorno.get_stringa_check_in()}}</td>
                 <td>{{soggiorno.get_stringa_check_out()}}</td>
                 <td>{{soggiorno.num_ospiti}}</td>
                 <td>
                     {% for camera in soggiorno.camere %}
-                    {{camera.ordinale}}, 
+                     {{camera.ordinale}}
                     {% endfor %}
                 </td>
                 <td>
                     <a href="{{url_for('views.pagamento', id_pagamento=soggiorno.pagamento.id)}}">Vedi dettagli</a>
                 </td>
                 <td>
-                    {% if soggiorno.check_in < now %}
+                    {% if soggiorno.check_in < now %} 
                     <a href="{{url_for('views.scrivi_recensione', id_proprieta=soggiorno.camere[0].proprieta.id)}}">Recensisci</a>
                     {% endif %}
                 </td>
             </tr>
-            
             {% endfor %}
         </tbody>
     </table>
