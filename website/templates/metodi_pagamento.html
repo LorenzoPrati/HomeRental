@@ -4,50 +4,48 @@
 {% block content %}
 {% if user.metodi_pagamento %}
 <h2 align="center">I tuoi metodi di pagamento</h2>
-<div class="d-flex flex-row pt-4 justify-content-center">
+<div class="row pt-2 justify-content-center">
     <ul class="list-group">
         {% for metodo_pagamento in user.metodi_pagamento %}
-        <li class="list-group-item">{{metodo_pagamento.get_nome()}}</li>
+        <li class="list-group-item">{{metodo_pagamento.get_nome()}}
+            {% if user.proprietario %}
+            {% if user.proprietario.id_metodo_accredito == metodo_pagamento.id %}
+            (impostato come accredito)
+            {% endif %}
+            {% endif %}
+        </li>
         {% endfor %}
     </ul>
 </div>
-<hr>
 {% endif %}
 
-<h2 align="center">Aggiungi un metodo di pagamento</h2>
-<br>
-
-<div class="row">
-    <div class="col m5">
-        <a href="{{url_for('views.aggiungi_carta', flag=flag)}}" class="btn btn-primary btn-lg btn-block"><i
-                class="bi bi-credit-card-fill"></i> Carta</a>
-    </div>
-    <div class="col m5">
-        <a href="{{ url_for('views.aggiungi_paypal', flag=flag) }}" class="btn btn-primary btn-lg btn-block"><i
-                class="bi bi-paypal"></i> Paypal</a>
-    </div>
+<div class="row mt-2 justify-content-center">
+    <a href="{{url_for('views.aggiungi_carta', flag=flag)}}" class="btn btn-primary"><i
+        class="bi bi-credit-card-fill mr-1"></i>Aggiungi Carta</a>
 </div>
-<hr>
+
+<div class="row mt-2 justify-content-center">
+    <a href="{{url_for('views.aggiungi_paypal', flag=flag)}}" class="btn btn-primary"><i
+        class="bi bi-paypal mr-1"></i>Aggiungi Paypal</a>
+</div>
 
 {% if user.proprietario %}
-<h2 align="center">Il tuo metodo di accredito</h2>
 <form method="post">
-    <div class="d-flex flex-row pt-4 justify-content-center">
-        <ul class="list-group">
-            <li class="list-group-item">{{user.proprietario.metodo_accredito.get_nome()}}</li>
-        </ul>
-    </div>
-    <div class="d-flex row p-1 justify-content-center form-group">
+    <div class="row mt-4 form-group">
+        <label for="id_metodo_accredito">Modifica metodo accredito host:</label>
         <select name="id_metodo_accredito" id="id_metodo_accredito" class="form-control">
-          <option selected disabled>Seleziona il metodo di accredito</option>
-          {% for metodo_pagamento in user.metodi_pagamento %}
-          <option value="{{metodo_pagamento.id}}" class="form-control">{{metodo_pagamento.get_nome()}}</option>
-          {% endfor %}
+            <option selected disabled>Seleziona il metodo di accredito</option>
+            {% for metodo_pagamento in user.metodi_pagamento %}
+            <option value="{{metodo_pagamento.id}}" class="form-control">{{metodo_pagamento.get_nome()}}</option>
+            {% endfor %}
         </select>
-      </div>
-    <button type="submit" class="btn btn-primary btn-lg btn-block">Modifica</button>
+    </div>
+    <div class="row justify-content-center">
+        <button type="submit" class="btn btn-primary">Salva</button>
+    </div>
 </form>
-
 {% endif %}
+
+
 
 {% endblock %}
