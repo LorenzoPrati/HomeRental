@@ -2,20 +2,27 @@
 {% block title %}Ricerca{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        {% for proprieta in lista_proprieta %}
-            <div class="col-4 p-2">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
-                        <h6>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</h6>
-                        <h6>{{proprieta.valutazione_media}}<i class="bi bi-star-fill p-1"></i> ({{proprieta.num_valutazioni}})</h6>
-                        <a href="{{ url_for('views.prenota_proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, id_proprieta=proprieta.id) }}" class="btn btn-primary btn-lg btn-block">Scopri</a>
-                    </div>
+
+<div class="row">
+    {% for proprieta in proprieta %}
+    <div class="col-3">
+        <div class="card">
+            <div class="card-header">{{proprieta.id_tipo_struttura}}</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
+                <p>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</p>
+                <p><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
+                    ({{proprieta.num_valutazioni}})</p>
+                <p></p>
+                <div class="card-body">
+                    <a
+                        href="{{ url_for('views.prenota_proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, id_proprieta=proprieta.id) }}">Scopri
+                        i dettagli</a>
                 </div>
             </div>
-        {% endfor %}
+        </div>
     </div>
+    {% endfor %}
 </div>
+
 {% endblock %}

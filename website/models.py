@@ -203,7 +203,7 @@ class Recensione(db.Model):
     proprieta: Mapped["Proprieta"] = relationship(back_populates="recensioni")
 
     def get_stringa_data_ultima_modifica(self):
-        return self.data_ultima_modifica.strftime("%d %B %Y")
+        return self.data_ultima_modifica.strftime("%d %b %Y")
 
 
 class Tipo_Metodo_Pagamento(Enum):

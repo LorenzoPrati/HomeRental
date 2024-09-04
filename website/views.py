@@ -143,7 +143,7 @@ def ricerca():
         "ricerca.html",
         user=current_user,
         citta=citta,
-        lista_proprieta=lista_proprieta,
+        proprieta=lista_proprieta,
         check_in=check_in,
         check_out=check_out,
         num_ospiti=num_ospiti,
