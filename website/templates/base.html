@@ -26,10 +26,13 @@
         <div class="collapse navbar-collapse" id="navbar">
             <div class="navbar-nav">
                     {% if user.is_authenticated %}
-                    <a class="nav-item nav-link" id="esplora" href="/">Esplora</a>
                     <a class="nav-item nav-link" id="prenotazioni" href="/tuoi_soggiorni">Prenotazioni</a>
                     <a class="nav-item nav-link" id="profilo" href="/profilo">Profilo</a>
                     <a class="nav-item nav-link" id="dashboard_proprietario" href="/tue_proprieta">Le tue proprietà</a>
+                    <a class="nav-item nav-link" id="migliori_host" href="/migliori_host">#MiglioriHost</a>
+                    <a class="nav-item nav-link" id="migliori_proprieta" href="/migliori_proprieta">#MiglioriProprietà</a>
+                    <a class="nav-item nav-link" id="citta_popolari" href="/citta_popolari">#Trending</a>
+                    <a class="nav-item nav-link" id="amenita_apprezzate" href="/amenita_apprezzate">#AmenitàApprezzate</a>
                     {% endif %}
             </div>
         </div>

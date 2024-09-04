@@ -2,62 +2,44 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container">
-  <div class="row d-flex m-4 justify-content-center">
-    <h2>Benvenuta, {{ user.nome }}.</h2>
-  </div>
-  <div class="row d-flex justify-content-center">
-    <a href="{{url_for('views.migliori_host')}}" class="btn btn-primary">#MiglioriHost</a>
-    <a href="{{url_for('views.citta_popolari')}}" class="btn btn-primary">#PiùVisitateNegliUltimi30Giorni</a>
-    <a href="{{url_for('views.migliori_proprieta')}}" class="btn btn-primary">#MiglioriProprietà</a>
-    <a href="{{url_for('views.amenita_apprezzate')}}" class="btn btn-primary">#AmenitàPiùApprezzate</a>
-  </div>
+<div class="row justify-content-center">
+  <h2 align="center">Benvenuta, {{ user.nome }}. Dove vuoi andare?</h2>
 </div>
-
-<div class="row d-flex justify-content-center">
-  <form method="POST">
-    <h3 class="row d-flex mt-4 justify-content-center">Dove vuoi andare?</h3>
-    <small class="row d-flex justify-content-center">Seleziona una destinazione per scoprire fantastiche
-      location</small>
-    <div class="d-flex row p-1 justify-content-center form-group">
-      <label for="citta">Citta: </label>
-      <select name="citta" id="citta" class="form-control">
-        <option selected disabled>Scegli una città...</option>
-        {% for citta in citta %}
-        <option value="{{citta.nome}}" class="form-control">{{citta.nome}}</option>
-        {% endfor %}
-      </select>
+<form method="POST">
+  <div class="row pt-4 justify-content-center">
+    <div class="col-3">
+      <div class="form-group">
+        <label for="citta" class="font-weight-bold">Dove: </label>
+        <select name="citta" id="citta" class="form-control">
+          <option selected disabled>Città</option>
+          {% for citta in citta %}
+          <option value="{{citta.nome}}" class="form-control">{{citta.nome}}</option>
+          {% endfor %}
+        </select>
+      </div>
     </div>
-    <div class="d-flex row p-1 justify-content-center form-group">
-      <label for="check_in">Da</label>
-      <input type="datetime-local" id="check_in" name="check_in" class="form-control">
+    <div class="col-3">
+      <div class="form-group">
+        <label for="check_in" class="font-weight-bold">Check-In</label>
+        <input type="datetime-local" id="check_in" name="check_in" class="form-control">
+      </div>
     </div>
-    <div class="d-flex row p-1 justify-content-center form-group">
-      <label for="check_out">a</label>
-      <input type="datetime-local" id="check_out" name="check_out" class="form-control">
+    <div class="col-3">
+      <div class="form-group">
+        <label for="check_out" class="font-weight-bold">Check-Out</label>
+        <input type="datetime-local" id="check_out" name="check_out" class="form-control">
+      </div>
     </div>
-    <div class="d-flex row p-1 justify-content-center form-group">
-      <label for="num_ospiti">Quanti</label>
-      <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="1">
+    <div class="col-3">
+      <div class="form-group">
+        <label for="num_ospiti" class="font-weight-bold">Quanti</label>
+        <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="1">
+      </div>
     </div>
-
-    <div class="d-flex row p-4 justify-content-center">
-      <button type="submit" class="btn btn-primary btn-lg btn-block">Cerca</button>
-    </div>
-
-    <hr>
-    <h6 class="row d-flex pb-2 justify-content-center">Opzioni avanzate</h6>
-
-    <div class="d-flex row p-1 justify-content-center form-group">
-      <select name="tipo_struttura" id="tipo_struttura" class="form-control">
-        <option selected disabled>Seleziona il tipo struttura</option>
-        {% for tipo_struttura in tipi_struttura %}
-        <option value="{{tipo_struttura.nome}}" class="form-control">{{tipo_struttura.nome}}</option>
-        {% endfor %}
-      </select>
-    </div>
-
-    <div class="d-flex row p-1 justify-content-center form-group">
+  </div>
+  <hr>
+  <div class="row pt-1 justify-content-center">
+    <div class="form-group">
       {% for amenita in amenita %}
       <div class="form-check form-check-inline">
         <input class="form-check-input" type="checkbox" id="inlineCheckbox1" name="amenita_selezionate"
@@ -66,12 +48,25 @@
       </div>
       {% endfor %}
     </div>
-    <hr>
-    <div class="d-flex row pt-5 justify-content-center form-group">
-      <h6><i class="bi bi-house-fill"></i>HomeRental</h6>
+  </div>
+  <div class="row pt-1 justify-content-center">
+    <div class="form-group">
+      {% for tipo_struttura in tipi_struttura %}
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="inlineCheckbox1" name="tipo_struttura"
+          value="{{tipo_struttura.nome}}">
+        <label class="form-check-label" for="inlineCheckbox1">{{tipo_struttura.nome}}</label>
+      </div>
+      {% endfor %}
     </div>
-</div>
+  </div>
+  <div class="row justify-content-center">
+    <button type="submit" class="btn btn-primary">Cerca</button>
+  </div>
 </form>
+
+
+
 
 
 {% endblock %}

@@ -363,14 +363,14 @@ def pagamento():
 @login_required
 def metodi_pagamento():
     flag = request.args.get("flag")
-    
-    if request.method == 'POST':
-        id_metodo_accredito = request.form.get('id_metodo_accredito')
+
+    if request.method == "POST":
+        id_metodo_accredito = request.form.get("id_metodo_accredito")
         metodo_accredito = Metodo_Pagamento.query.get(id_metodo_accredito)
         current_user.proprietario.metodo_accredito = metodo_accredito
-        
-        flash('Metodo di accredito modificato.')
-        
+
+        flash("Metodo di accredito modificato.")
+
         db.session.commit()
 
     return render_template("metodi_pagamento.html", user=current_user, flag=flag)
@@ -561,10 +561,10 @@ def rimuovi_camera():
         )
         .all()
     )
-    
+
     """for s in camera.soggiorni:
         db.session.delete(s)"""
-            
+
     db.session.delete(camera)
     db.session.commit()
 
@@ -640,7 +640,7 @@ def rimuovi_proprieta():
     id_proprieta = obj["id_proprieta"]
 
     proprieta = Proprieta.query.get(id_proprieta)
-    
+
     db.session.delete(proprieta)
     db.session.commit()
 
