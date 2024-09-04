@@ -336,7 +336,11 @@ def scrivi_recensione():
 def profilo():
     if request.method == "POST":
         biografia = request.form.get("biografia")
-        current_user.proprietario.biografia = biografia
+        telefono = request.form.get("telefono")
+        if biografia:
+            current_user.proprietario.biografia = biografia
+        if telefono:
+            current_user.proprietario.telefono = telefono
         db.session.commit()
 
     return render_template("profilo.html", user=current_user)

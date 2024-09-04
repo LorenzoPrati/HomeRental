@@ -2,23 +2,28 @@
 {% block title %}Profilo{% endblock %}
 
 {% block content %}
-<h2 align="center">{{ user.nome }} {{ user.cognome }}</h2>
-<h4 align="center">{{ user.nome_utente }}</h4>
-<br>
-<div class="row">
-
+<div class="row justify-content-center">
+    <h2 align="center">{{ user.nome }} {{ user.cognome }}</h2>
+</div>
+<div class="row justify-content-center">
+    <h4 align="center">{{ user.nome_utente }}</h4>
+</div>
+<div class="row mt-4 justify-content-center">
+    <a href="{{url_for('views.metodi_pagamento')}}" class="btn btn-primary">I tuoi metodi di pagamento</a>
 </div>
 <hr>
-<h4 align="center"><i class="bi bi-ticket-fill mr-2"></i>Coupons utilizzabili</h4>
+<div class="row justify-content-center">
+    <h4 align="center"><i class="bi bi-ticket-fill mr-2"></i>Coupons utilizzabili</h4>
+</div>
 <div class="row">
     {% for coupon in user.coupons %}
     {% if not coupon.pagamento %}
     <div class="col-4 p-2">
         <div class="card">
             <div class="card-body">
-                <h5 class="card-title">Sconto del {{coupon.percentuale_sconto}}%</h5>
-                applicabile su {% for tipo_struttura in coupon.tipi_struttura %}
-                {{tipo_struttura.nome}},
+                <h6 class="card-title">Sconto del {{coupon.percentuale_sconto}}%</h6>
+                {% for tipo_struttura in coupon.tipi_struttura %}
+                <small class="mr-2">{{tipo_struttura.nome}}</small>
                 {% endfor %}
             </div>
         </div>
@@ -29,9 +34,9 @@
 
 {% if user.proprietario %}
 <hr>
-<h4 align="center">Statistiche Host</h4>
+<h4 align="center">Host</h4>
 <div class="row justify-content-center">
-    <h5 class="card-title"><i class="bi bi-star-fill"></i> {{user.proprietario.valutazione_media}}
+    <h5 class="card-title"><i class="bi bi-star-fill mr-1"></i>{{user.proprietario.valutazione_media}}
         ({{user.proprietario.num_valutazioni}})</h5>
     <br>
 </div>
@@ -41,12 +46,15 @@
         <textarea class="form-control" name="biografia" id="biografia" rows="5"
             placeholder="{{user.proprietario.biografia}}"></textarea>
     </div>
-    <button type="submit" class="btn btn-primary btn-lg btn-block">Modifica</button>
+    <div class="form-group">
+        <label for="telefono">Telefono:</label>
+        <input type="tel" class="form-control" id="telefono" name="telefono" placeholder={{user.proprietario.telefono}}>
+    </div>
+    <div class="row justify-content-center">
+        <button type="submit" class="btn btn-primary">Salva</button>
+    </div>
+
 </form>
 {% endif %}
-
-
-<hr>
-<a href="{{url_for('views.metodi_pagamento')}}" class="btn btn-primary btn-lg btn-block">I tuoi metodi di pagamento</a>
 
 {% endblock %}
