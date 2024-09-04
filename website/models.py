@@ -158,7 +158,7 @@ class Camera(db.Model):
 
     proprieta: Mapped["Proprieta"] = relationship(back_populates="camere")
     soggiorni: Mapped[Optional[List["Soggiorno"]]] = relationship(
-        secondary=occupazioni, back_populates="camere"
+        secondary=occupazioni, back_populates="camere", cascade="all, delete"
     )
 
 
@@ -176,7 +176,7 @@ class Soggiorno(db.Model):
         secondary=occupazioni, back_populates="soggiorni"
     )
     pagamento: Mapped["Pagamento"] = relationship(
-        back_populates="soggiorno", passive_deletes=True
+        back_populates="soggiorno"
     )
 
     def get_stringa_check_in(self):
@@ -216,7 +216,7 @@ class Metodo_Pagamento(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
-    tipo: Mapped[int] = mapped_column()
+    tipo: Mapped[Tipo_Metodo_Pagamento] = mapped_column()
 
     utente: Mapped["Utente"] = relationship(back_populates="metodi_pagamento")
     proprietario: Mapped[Optional["Proprietario"]] = relationship(
@@ -226,12 +226,15 @@ class Metodo_Pagamento(db.Model):
     carta_credito: Mapped[Optional["Carta_Credito"]] = relationship(
         back_populates="metodo_pagamento"
     )
-    pagamenti: Mapped[Optional[List["Pagamento"]]] = relationship(
-        back_populates="metodo_pagamento"
+    addebiti: Mapped[Optional[List["Pagamento"]]] = relationship(
+        back_populates="metodo_addebito", foreign_keys="Pagamento.id_metodo_addebito"
+    )
+    accrediti: Mapped[Optional[List["Pagamento"]]] = relationship(
+        back_populates="metodo_accredito", foreign_keys="Pagamento.id_metodo_accredito"
     )
 
     def get_nome(self):
-        if self.tipo == Tipo_Metodo_Pagamento.CARTA_CREDITO.value:
+        if self.tipo == Tipo_Metodo_Pagamento.CARTA_CREDITO:
             meta = len(self.carta_credito.numero_carta) // 2
             return self.carta_credito.numero_carta[:meta] + "*" * meta
         else:
@@ -280,7 +283,8 @@ class Pagamento(db.Model):
     __tablename__ = "pagamenti"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    id_metodo_pagamento: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
+    id_metodo_addebito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
+    id_metodo_accredito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_coupon: Mapped[int] = mapped_column(
         ForeignKey("coupons.id"), unique=True, nullable=True
     )
@@ -291,8 +295,11 @@ class Pagamento(db.Model):
     totale: Mapped[int] = mapped_column()
 
     soggiorno: Mapped["Soggiorno"] = relationship(back_populates="pagamento")
-    metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(
-        back_populates="pagamenti"
+    metodo_addebito: Mapped["Metodo_Pagamento"] = relationship(
+        back_populates="addebiti", foreign_keys="Pagamento.id_metodo_addebito"
+    )
+    metodo_accredito: Mapped["Metodo_Pagamento"] = relationship(
+        back_populates="accrediti", foreign_keys="Pagamento.id_metodo_accredito"
     )
     coupon: Mapped[Optional["Coupon"]] = relationship(back_populates="pagamento")
 

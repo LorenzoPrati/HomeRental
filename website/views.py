@@ -215,7 +215,8 @@ def prenota_proprieta():
             pagamento = Pagamento(
                 totale=totale,
                 id_soggiorno=soggiorno.id,
-                id_metodo_pagamento=id_metodo_pagamento,
+                id_metodo_addebito=id_metodo_pagamento,
+                id_metodo_accredito=proprieta.proprietario.id_metodo_accredito,
             )
             if id_coupon:
                 pagamento.id_coupon = id_coupon
@@ -387,7 +388,7 @@ def aggiungi_carta():
         data_scadenza = request.form.get("data_scadenza")
 
         metodo_pagamento = Metodo_Pagamento(
-            id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.value
+            id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.name
         )
 
         carta = Carta_Credito(
@@ -423,7 +424,7 @@ def aggiungi_paypal():
         email = request.form.get("email")
 
         metodo_pagamento = Metodo_Pagamento(
-            id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.PAYPAL.value
+            id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.PAYPAL.name
         )
 
         paypal = Paypal(email=email)
@@ -561,8 +562,8 @@ def rimuovi_camera():
         .all()
     )
     
-    for s in camera.soggiorni:
-        db.session.delete(s)
+    """for s in camera.soggiorni:
+        db.session.delete(s)"""
             
     db.session.delete(camera)
     db.session.commit()
@@ -639,23 +640,9 @@ def rimuovi_proprieta():
     id_proprieta = obj["id_proprieta"]
 
     proprieta = Proprieta.query.get(id_proprieta)
-
-    soggiorni = (
-        db.session.query(Soggiorno)
-        .outerjoin(occupazioni)
-        .join(Camera)
-        .filter(
-            Camera.id_proprieta == id_proprieta,
-            Soggiorno.check_in > datetime.datetime.now(),
-        )
-        .distinct()
-    )
-
+    
     db.session.delete(proprieta)
-
-    for soggiorno in soggiorni:
-        db.session.delete(soggiorno)
-        db.session.commit()
+    db.session.commit()
 
     return jsonify({})
 
