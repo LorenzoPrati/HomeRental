@@ -86,7 +86,7 @@ class Amenita(db.Model):
     nome: Mapped[str] = mapped_column(String(256), primary_key=True)
 
     proprieta: Mapped[Optional[List["Proprieta"]]] = relationship(
-        secondary=servizi, back_populates="amenita", cascade="all, delete"
+        secondary=servizi, back_populates="amenita"
     )
 
 
@@ -124,6 +124,7 @@ class Proprieta(db.Model):
     id_citta: Mapped[str] = mapped_column(ForeignKey("citta.nome"))
     id_tipo_struttura: Mapped[str] = mapped_column(ForeignKey("tipi_struttura.nome"))
     id_proprietario: Mapped[int] = mapped_column(ForeignKey("proprietari.id"))
+    data_rimozione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
     proprietario: Mapped["Proprietario"] = relationship(back_populates="proprieta")
     amenita: Mapped[Optional[List["Amenita"]]] = relationship(
@@ -132,10 +133,10 @@ class Proprieta(db.Model):
     citta: Mapped["Citta"] = relationship(back_populates="proprieta")
     tipo_struttura: Mapped["Tipo_Struttura"] = relationship(back_populates="proprieta")
     camere: Mapped[Optional[List["Camera"]]] = relationship(
-        back_populates="proprieta", cascade="all, delete"
+        back_populates="proprieta"
     )
     recensioni: Mapped[Optional[List["Recensione"]]] = relationship(
-        back_populates="proprieta", cascade="all, delete"
+        back_populates="proprieta"
     )
 
 
@@ -148,17 +149,18 @@ occupazioni = db.Table(
 
 class Camera(db.Model):
     __tablename__ = "camere"
-    __table_args__ = (UniqueConstraint("id_proprieta", "ordinale"),)
+    #__table_args__ = (UniqueConstraint("id_proprieta", "ordinale"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     ordinale: Mapped[int] = mapped_column(nullable=False)
     num_ospiti: Mapped[int] = mapped_column()
     prezzo_per_notte: Mapped[int] = mapped_column()
     id_proprieta: Mapped[int] = mapped_column(ForeignKey("proprieta.id"))
+    data_rimozione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
     proprieta: Mapped["Proprieta"] = relationship(back_populates="camere")
     soggiorni: Mapped[Optional[List["Soggiorno"]]] = relationship(
-        secondary=occupazioni, back_populates="camere", cascade="all, delete"
+        secondary=occupazioni, back_populates="camere"
     )
 
 
@@ -170,6 +172,7 @@ class Soggiorno(db.Model):
     check_out: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     num_ospiti: Mapped[int] = mapped_column()
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
+    data_cancellazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
     utente: Mapped["Utente"] = relationship(back_populates="soggiorni")
     camere: Mapped[List["Camera"]] = relationship(

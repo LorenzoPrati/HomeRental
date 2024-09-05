@@ -20,6 +20,7 @@
         </thead>
         <tbody>
             {% for soggiorno in soggiorni %}
+            {% if not soggiorno.data_cancellazione %}
             <tr>
                 <td>
                     {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
@@ -44,6 +45,7 @@
                     {% endif %}
                 </td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>

@@ -57,9 +57,10 @@
 </form>
 <hr>
 <h5 align="center">Camere</h5>
-<div class="row">
+<div class="row justify-content-center">
     {% for camera in proprieta.camere %}
-      <div class="card mr-2">
+    {% if camera.data_rimozione == None %}
+      <div class="card m-2">
         <div class="card-body">
             <h5 class="card-title">Camera {{ camera.ordinale }}</h5>
             <hr>
@@ -71,9 +72,12 @@
               {{camera.prezzo_per_notte}}<i class="bi bi-currency-euro"></i> notte
             </h5>
             <hr>
-            <a href="" onclick="rimuovi_camera({{camera.id}})">Elimina</a>
+            <div class="row justify-content-center">
+              <button class="btn btn-danger" onclick="rimuovi_camera({{camera.id}})">Elimina</button>
+            </div>
         </div>
     </div>
+    {% endif %}
     {% endfor %}
   </div>
 

@@ -3,7 +3,6 @@
 
 {% block content %}
 <h2 align="center">Inserisci i dati della tua proprieta.</h2>
-<br />
 <form method="POST">
     {% if not user.proprietario %}
     <div class="form-group">
@@ -48,10 +47,10 @@
             {% endfor %}
         </select>
     </div>
-    <br />
-    <button type="submit" class="btn btn-primary btn-lg btn-block">
-        <i class="bi bi-plus-circle-fill"></i>
-    </button>
+    <div class="row justify-content-center">
+        <button type="submit" class="btn btn-primary">Salva</button>
+    </div>
+    
 </form>
 
 {% endblock %}

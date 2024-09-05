@@ -77,7 +77,9 @@
         <div class="row">
             <p>{{proprieta.proprietario.biografia}}</p>
         </div>
+
         <hr>
+
         <div class="form-group">
             <label for="check_in" class="font-weight-bold">Check-in:
             </label><input type="datetime-local" id="check_in" name="check_in" class="form-control" value="{{check_in}}"
@@ -93,18 +95,19 @@
             <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="{{num_ospiti}}" ,
                 disabled="true">
         </div>
-        <!--
+        
         <div class="form-group">
             <select class="form-control" id="id_metodo_pagamento" , name="id_metodo_pagamento">
-                <option selected disabled>Scegli il metodo di pagamento</option>
+                <option selected disabled>Metodo di pagamento</option>
                 {% for metodo_pagamento in user.metodi_pagamento %}
                 <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.get_nome()}}</option>
                 {% endfor %}
             </select>
         </div>
+
         <div class="form-group">
             <select class="form-control" id="id_coupon" , name="id_coupon">
-                <option selected disabled>Usa un coupon</option>
+                <option selected disabled>Coupon</option>
                 {% for coupon in coupons %}
                 <option value="{{coupon.id}}">
                     {{coupon.percentuale_sconto}}% -
@@ -115,7 +118,7 @@
                 {% endfor %}
             </select>
         </div>
-        -->
+        
         <div class="row justify-content-center">
             <button type="submit" class="btn btn-primary">Vai al pagamento</button>
         </div>

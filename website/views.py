@@ -120,8 +120,10 @@ def ricerca():
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
         .filter(
+            Camera.data_rimozione.is_(None),
             or_(
                 Soggiorno.id.is_(None),
+                Soggiorno.data_cancellazione.is_(None),
                 check_in > Soggiorno.check_out,
                 check_out < Soggiorno.check_in,
             )
@@ -234,9 +236,11 @@ def prenota_proprieta():
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
         .filter(
+            Camera.data_rimozione.is_(None),
             Camera.id_proprieta == proprieta.id,
             or_(
                 Soggiorno.id.is_(None),
+                Soggiorno.data_cancellazione.is_(None),
                 check_in > Soggiorno.check_out,
                 check_out < Soggiorno.check_in,
             ),
@@ -370,12 +374,13 @@ def metodi_pagamento():
 
     if request.method == "POST":
         id_metodo_accredito = request.form.get("id_metodo_accredito")
-        metodo_accredito = Metodo_Pagamento.query.get(id_metodo_accredito)
-        current_user.proprietario.metodo_accredito = metodo_accredito
+        if id_metodo_accredito:
+            metodo_accredito = Metodo_Pagamento.query.get(id_metodo_accredito)
+            current_user.proprietario.metodo_accredito = metodo_accredito
 
-        flash("Metodo di accredito modificato.")
+            db.session.commit()
 
-        db.session.commit()
+            flash("Metodo di accredito modificato.")
 
     return render_template("metodi_pagamento.html", user=current_user, flag=flag)
 
@@ -457,14 +462,17 @@ def soggiorni_tua_proprieta():
 
     soggiorni = (
         db.session.query(Soggiorno)
-        .join(occupazioni)
+        .outerjoin(occupazioni)
         .join(Camera)
         .filter(Camera.id_proprieta == id_proprieta)
         .distinct()
     )
 
     return render_template(
-        "soggiorni_tua_proprieta.html", user=current_user, proprieta=proprieta, soggiorni=soggiorni
+        "soggiorni_tua_proprieta.html",
+        user=current_user,
+        proprieta=proprieta,
+        soggiorni=soggiorni,
     )
 
 
@@ -558,23 +566,24 @@ def rimuovi_camera():
 
     camera = Camera.query.get(id_camera)
 
+    camera.data_rimozione = datetime.datetime.now()
+
     camere_da_modificare = (
         db.session.query(Camera)
         .filter(
             Camera.id_proprieta == camera.id_proprieta,
             Camera.ordinale > camera.ordinale,
+            Camera.data_rimozione.is_(None),
         )
         .all()
     )
 
-    """for s in camera.soggiorni:
-        db.session.delete(s)"""
-
-    db.session.delete(camera)
-    db.session.commit()
-
     for camera_da_modificare in camere_da_modificare:
         camera_da_modificare.ordinale -= 1
+
+    for s in camera.soggiorni:
+        if not s.data_cancellazione:
+            s.data_cancellazione = datetime.datetime.now()
 
     db.session.commit()
 
@@ -588,9 +597,16 @@ def aggiungi_camera():
     id_proprieta = obj["id_proprieta"]
     prezzo_per_notte = int(obj["prezzo_per_notte"])
     num_ospiti = int(obj["num_ospiti"])
-
     proprieta = Proprieta.query.get(id_proprieta)
-    ordinale = len(proprieta.camere) + 1
+
+    camere = [
+        c
+        for c in db.session.query(Camera)
+        .filter(Camera.id_proprieta == proprieta.id, Camera.data_rimozione.is_(None))
+        .all()
+    ]
+
+    ordinale = len(camere) + 1
 
     nuova_camera = Camera(
         id_proprieta=id_proprieta,
@@ -645,8 +661,12 @@ def rimuovi_proprieta():
     id_proprieta = obj["id_proprieta"]
 
     proprieta = Proprieta.query.get(id_proprieta)
+    proprieta.data_rimozione = datetime.datetime.now()
 
-    db.session.delete(proprieta)
+    db.session.query(Soggiorno).outerjoin(occupazioni).join(Camera).filter(
+        Camera.id_proprieta == id_proprieta, Soggiorno.data_cancellazione.is_(None)
+    ).update({"data_cancellazione": datetime.datetime.now()})
+
     db.session.commit()
 
     return jsonify({})
