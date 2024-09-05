@@ -706,6 +706,19 @@ def rimuovi_proprieta():
 
     return jsonify({})
 
+@views.route("/annulla_soggiorno", methods=["GET", "POST"])
+@login_required
+def annulla_soggiorno():
+    obj = json.loads(request.data)
+    id_soggiorno = obj["id_soggiorno"]
+    
+    soggiorno = Soggiorno.query.get(id_soggiorno)
+    
+    soggiorno.data_cancellazione = datetime.datetime.now()
+    
+    db.session.commit()
+    
+    return jsonify({})
 
 @views.route("/migliori_host", methods=["GET", "POST"])
 @login_required

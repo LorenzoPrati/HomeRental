@@ -56,5 +56,16 @@ function rimuovi_proprieta(id_proprieta) {
     });
 }
 
+function annulla_soggiorno(id_soggiorno) {
+    fetch('/annulla_soggiorno', {
+        method: 'POST',
+        body: JSON.stringify(
+            {id_soggiorno: id_soggiorno}
+        )
+    }).then((_res) => {
+        window.location.reload()
+    });
+}
+
 
 
