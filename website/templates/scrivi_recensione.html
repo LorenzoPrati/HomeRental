@@ -7,40 +7,41 @@
 {% else %}
 <h2 align="center">Scrivi la tua recensione</i></h2>
 {% endif %}
-<div class="container">
-    <form method="POST">
-        {% if vecchia_recensione %}
-        <div class="form-group">
-            <label for="exampleFormControlSelect2">Stelle</label>
-            <select class="form-control" id="valutazione" name="valutazione">
-            <option selected>{{vecchia_recensione.valutazione}}</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
-        <form-group>
-            <textarea class="form-control" name="testo" id="testo" placeholder="{{vecchia_recensione.testo}}" rows=4></textarea>
-        </form-group>
-        {% else %}
-        <div class="form-group">
-            <label for="exampleFormControlSelect2">Stelle</label>
-            <select class="form-control" id="valutazione" name="valutazione">
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
-        <form-group>
-            <textarea class="form-control" name="testo" id="testo" placeholder="Scrivi qui la tua recensione." rows="5"></textarea>
-        </form-group>
-        {% endif %}
-        <br>
-        <button type="submit" class="btn btn-primary btn-lg btn-block">Pubblica</button>
-    </form>
-</div>
+<form method="POST">
+  {% if vecchia_recensione %}
+  <div class="form-group">
+    <label for="exampleFormControlSelect2">Stelle</label>
+    <select class="form-control" id="valutazione" name="valutazione">
+      <option selected>{{vecchia_recensione.valutazione}}</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+  </div>
+  <form-group>
+    <textarea class="form-control" name="testo" id="testo" placeholder="{{vecchia_recensione.testo}}" rows=4></textarea>
+  </form-group>
+  {% else %}
+  <div class="form-group">
+    <label for="exampleFormControlSelect2">Stelle</label>
+    <select class="form-control" id="valutazione" name="valutazione">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+    </select>
+  </div>
+  <form-group>
+    <textarea class="form-control" name="testo" id="testo" placeholder="Scrivi qui la tua recensione."
+      rows="5"></textarea>
+  </form-group>
+  {% endif %}
+  <br>
+  <div class="row justify-content-center">
+    <button type="submit" class="btn btn-primary">Salva</button>
+  </div>
+</form>
 {% endblock %}

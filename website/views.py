@@ -126,7 +126,7 @@ def ricerca():
                 Soggiorno.data_cancellazione.is_(None),
                 check_in > Soggiorno.check_out,
                 check_out < Soggiorno.check_in,
-            )
+            ),
         )
         .distinct()
         .subquery()
@@ -135,7 +135,11 @@ def ricerca():
     lista_proprieta = (
         db.session.query(Proprieta)
         .join(Camera)
-        .filter(Camera.id.in_(id_camere_libere), Proprieta.id.in_(id_proprieta_valide))
+        .filter(
+            Camera.id.in_(id_camere_libere),
+            Proprieta.id.in_(id_proprieta_valide),
+            Proprieta.data_rimozione.is_(None),
+        )
         .group_by(Proprieta.id)
         .having(func.sum(Camera.num_ospiti) >= num_ospiti)
         .all()
@@ -163,10 +167,25 @@ def tuoi_soggiorni():
         .all()
     )
 
+    proprieta = (
+        db.session.query(Proprieta)
+        .outerjoin(Camera)
+        .outerjoin(occupazioni)
+        .join(Soggiorno)
+        .filter(
+            Proprieta.data_rimozione.is_(None),
+            Soggiorno.id_utente == current_user.id,
+            Soggiorno.data_cancellazione.is_(None),
+            datetime.datetime.now() > Soggiorno.check_in,
+        )
+        .distinct()
+    )
+
     return render_template(
         "tuoi_soggiorni.html",
         user=current_user,
         soggiorni=soggiorni,
+        proprieta=proprieta,
         now=datetime.datetime.now(),
     )
 
@@ -581,8 +600,9 @@ def rimuovi_camera():
     for camera_da_modificare in camere_da_modificare:
         camera_da_modificare.ordinale -= 1
 
+    """Setto cancellati solo i soggiorni non ancora compiuti"""
     for s in camera.soggiorni:
-        if not s.data_cancellazione:
+        if not s.data_cancellazione and s.check_in > datetime.datetime.now():
             s.data_cancellazione = datetime.datetime.now()
 
     db.session.commit()
@@ -663,9 +683,24 @@ def rimuovi_proprieta():
     proprieta = Proprieta.query.get(id_proprieta)
     proprieta.data_rimozione = datetime.datetime.now()
 
-    db.session.query(Soggiorno).outerjoin(occupazioni).join(Camera).filter(
-        Camera.id_proprieta == id_proprieta, Soggiorno.data_cancellazione.is_(None)
-    ).update({"data_cancellazione": datetime.datetime.now()})
+    soggiorni = (
+        db.session.query(Soggiorno)
+        .outerjoin(occupazioni)
+        .join(Camera)
+        .filter(
+            Camera.id_proprieta == id_proprieta,
+            Soggiorno.data_cancellazione.is_(None),
+            Soggiorno.check_in > datetime.datetime.now(),
+        )
+        .distinct()
+    )
+
+    for s in soggiorni:
+        s.data_cancellazione = datetime.datetime.now()
+
+    for c in proprieta.camere:
+        if not c.data_rimozione:
+            c.data_rimozione = datetime.datetime.now()
 
     db.session.commit()
 

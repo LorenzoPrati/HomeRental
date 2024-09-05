@@ -183,10 +183,10 @@ class Soggiorno(db.Model):
     )
 
     def get_stringa_check_in(self):
-        return self.check_in.strftime("%d %b %Y %H:%M")
+        return self.check_in.strftime("%d %b %H:%M")
 
     def get_stringa_check_out(self):
-        return self.check_out.strftime("%d %b %Y %H:%M")
+        return self.check_out.strftime("%d %b %H:%M")
 
 
 class Recensione(db.Model):

@@ -15,12 +15,12 @@
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
                 <th scope="col">Pagamento</th>
-                <th scope="col">Recensisci</th>
+                <th scope="col">Status</th>
             </tr>
         </thead>
         <tbody>
             {% for soggiorno in soggiorni %}
-            {% if not soggiorno.data_cancellazione %}
+            
             <tr>
                 <td>
                     {{soggiorno.camere[0].proprieta.citta.nome}}, {{soggiorno.camere[0].proprieta.indirizzo}}
@@ -37,17 +37,42 @@
                     {% endfor %}
                 </td>
                 <td>
-                    <a href="{{url_for('views.pagamento', id_pagamento=soggiorno.pagamento.id)}}">Vedi dettagli</a>
+                    <a href="{{url_for('views.pagamento', id_pagamento=soggiorno.pagamento.id)}}">Vedi</a>
                 </td>
                 <td>
-                    {% if soggiorno.check_in < now %} 
-                    <a href="{{url_for('views.scrivi_recensione', id_proprieta=soggiorno.camere[0].proprieta.id)}}">Recensisci</a>
+                    {% if soggiorno.data_cancellazione %}
+                    <span class="badge badge-pill badge-danger">Annullato</span>
+                    {% else %}
+                        {% if now > soggiorno.check_in and now < soggiorno.check_out%}
+                        <span class="badge badge-pill badge-warning">In corso</span>
+                        {% elif now > soggiorno.check_out%}
+                        <span class="badge badge-pill badge-secondary">Completato</span>
+                        {% else %}
+                        <span class="badge badge-pill badge-success">Prenotato</span>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>
-            {% endif %}
+            
             {% endfor %}
         </tbody>
     </table>
+</div>
+<h2 align="center">Luoghi da recensire</i></h2>
+<div class="row">
+    {% for proprieta in proprieta %}
+    <div class="col-3">
+        <div class="card">
+            <div class="card-header">{{proprieta.id_tipo_struttura}}</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
+                <p>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</p>
+                <p><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
+                    ({{proprieta.num_valutazioni}})</p>
+                <a href="{{ url_for('views.scrivi_recensione', id_proprieta=proprieta.id) }}">Scrivi recensione</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}
