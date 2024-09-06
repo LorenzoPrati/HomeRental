@@ -69,12 +69,33 @@ def home():
     tipi_struttura = Tipo_Struttura.query.all()
     amenita = Amenita.query.all()
 
+    soggiorno = (
+        db.session.query(Soggiorno)
+        .filter(
+            Soggiorno.id_utente == current_user.id,
+            Soggiorno.data_cancellazione.is_(None),
+            Soggiorno.check_in > datetime.datetime.now(),
+        )
+        .order_by(Soggiorno.check_in)
+        .first()
+    )
+
+    giorni = 0
+    ore = 0
+    if soggiorno:
+        tempo_mancante = soggiorno.check_out - datetime.datetime.now()
+        giorni = tempo_mancante.days
+        ore = tempo_mancante.seconds // 3600
+
     return render_template(
         "home.html",
         user=current_user,
         citta=citta,
         tipi_struttura=tipi_struttura,
         amenita=amenita,
+        soggiorno=soggiorno,
+        giorni=giorni,
+        ore=ore,
     )
 
 

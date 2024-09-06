@@ -64,9 +64,26 @@
     <button type="submit" class="btn btn-primary">Cerca</button>
   </div>
 </form>
-
-
-
-
+<hr>
+{% if soggiorno %}
+<div class="row justify-content-center"></div>
+  <h2 align="center">Il tuo prossimo viaggio</h2>
+</div>
+<div class="row justify-content-center">
+  <div class="card text-center">
+    <div class="card-header font-weight-bold">
+      Tra {{giorni}} giorni, {{ore}} ore
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">{{soggiorno.camere[0].proprieta.id_citta}}, {{soggiorno.camere[0].proprieta.indirizzo}}</h5>
+      <p class="card-text">Da: {{soggiorno.get_stringa_check_in()}} a: {{soggiorno.get_stringa_check_out()}}</p>
+      <p class="card-text">Camere prenotate:</p>
+      {% for c in soggiorno.camere %}
+        <p class="card-text">{{c.ordinale}}</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
 
 {% endblock %}
