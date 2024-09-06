@@ -9,21 +9,25 @@
     {% if not proprieta.data_rimozione %}
     <div class="col-4 p-2">
         <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
-                <a href="{{ url_for('views.modifica_proprieta', id=proprieta.id) }}">Modifica</a>
-                <br>
-                <a href="{{ url_for('views.soggiorni_tua_proprieta', id=proprieta.id) }}">Prenotazioni</a>
-                <br>
-                <a href="{{ url_for('views.recensioni_tua_proprieta', id=proprieta.id) }}">Recensioni</a>
-                <br>
+        <div class="card-header">{{proprieta.id_tipo_struttura}}</div>
+        <div class="card-body">
+            <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>
+            <p>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</p>
+            <p><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
+                ({{proprieta.num_valutazioni}})</p>
+            <a href="{{ url_for('views.modifica_proprieta', id=proprieta.id) }}">Modifica</a>
+            <a href="{{ url_for('views.soggiorni_tua_proprieta', id=proprieta.id) }}">Prenotazioni</a>
+            <a href="{{ url_for('views.recensioni_tua_proprieta', id=proprieta.id) }}">Recensioni</a>
+            <br>
+            <div class="row justify-content-end">
                 <button class="btn btn-danger" onclick="rimuovi_proprieta({{proprieta.id}})">Elimina</button>
             </div>
         </div>
     </div>
-    {% endif %}
-    {% endfor %}
-</div> 
+</div>
+{% endif %}
+{% endfor %}
+</div>
 <div class="row justify-content-center">
     <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary">Aggiungi proprieta</a>
 </div>

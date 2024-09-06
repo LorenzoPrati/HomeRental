@@ -492,6 +492,7 @@ def soggiorni_tua_proprieta():
         user=current_user,
         proprieta=proprieta,
         soggiorni=soggiorni,
+        now = datetime.datetime.now()
     )
 
 

@@ -12,10 +12,13 @@
                 <th scope="col">Check-Out</th>
                 <th scope="col">Quanti</th>
                 <th scope="col">Camere</th>
+                <th scope="col">Status</th>
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
             {% for soggiorno in soggiorni %}
+            {% if not soggiorno.data_cancellazione %}
             <tr>
                 <td>{{soggiorno.utente.nome}} {{soggiorno.utente.cognome}}</td>
                 <td>{{soggiorno.get_stringa_check_in()}}</td>
@@ -23,10 +26,30 @@
                 <td>{{soggiorno.num_ospiti}}</td>
                 <td>
                     {% for camera in soggiorno.camere %}
-                     {{camera.ordinale}}
+                    {{camera.ordinale}}
                     {% endfor %}
                 </td>
+                <td>
+                    {% if soggiorno.data_cancellazione %}
+                    <span class="badge badge-pill badge-danger">Annullato</span>
+                    {% else %}
+                    {% if now > soggiorno.check_in and now < soggiorno.check_out%} <span
+                        class="badge badge-pill badge-warning">In corso</span>
+                        {% elif now > soggiorno.check_out%}
+                        <span class="badge badge-pill badge-secondary">Completato</span>
+                        {% else %}
+                        <span class="badge badge-pill badge-success">Prenotato</span>
+                        {% endif %}
+                        {% endif %}
+                </td>
+                <td class="text-center py-1">
+                    {% if not soggiorno.data_cancellazione and now < soggiorno.check_in%}
+                    <button class="btn btn-outline-danger"
+                        onclick="annulla_soggiorno({{soggiorno.id}})">Annulla</button>
+                    {% endif %}
+                </td>
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>
