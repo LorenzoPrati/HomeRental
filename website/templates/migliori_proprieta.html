@@ -7,7 +7,7 @@
 <div class="d-flex flex-row pt-4 justify-content-center">
 <ul class="list-group">
     {% for proprieta in proprieta %}
-    <li class="list-group-item">{{proprieta.id_citta}}, {{proprieta.indirizzo}}, {{proprieta.valutazione_media}} <i class="bi bi-star-fill"></i> ({{proprieta.num_valutazioni}})</li>
+    <li class="list-group-item">{{proprieta.id_citta}}, {{proprieta.indirizzo}} - {{proprieta.valutazione_media}} <i class="bi bi-star-fill"></i> ({{proprieta.num_valutazioni}})</li>
     {% endfor %}
 </ul>
 </div>

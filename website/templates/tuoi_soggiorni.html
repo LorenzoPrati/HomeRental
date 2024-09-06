@@ -3,7 +3,7 @@
 
 {% block content %}
 <h2 align="center">Prenotazioni</i></h2>
-<div class="row">
+<div class="row p-2">
     <table class="table table-striped">
         <thead>
             <tr>
@@ -56,9 +56,9 @@
                 </td>
                 <td class="text-center py-1">
                     {% if not soggiorno.data_cancellazione %}
-                        {% if now > soggiorno.check_in %}
+                        {% if now > soggiorno.check_in and not soggiorno.camere[0].proprieta.data_rimozione %}
                         <a class="btn btn-outline-dark" href="{{ url_for('views.scrivi_recensione', id_proprieta=soggiorno.camere[0].proprieta.id) }}">Valuta</a>
-                        {% else %}
+                        {% elif now < soggiorno.check_in %}
                         <button class="btn btn-outline-danger" onclick="annulla_soggiorno({{soggiorno.id}})">Annulla</button>
                         {% endif %}
                     {% endif %}

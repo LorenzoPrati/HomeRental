@@ -15,7 +15,6 @@ def login():
         utente = Utente.query.filter_by(email=email).first()
         if utente:
             if utente.password == password:
-                flash('Loggato con successo.', category='success')
                 login_user(utente, remember=True)
                 return redirect(url_for('views.home'))
             else:
@@ -51,8 +50,7 @@ def sign_up():
             db.session.add(utente)
             db.session.commit()
             login_user(utente, remember=True)
-            flash('Account creato con successo.', category='success')
-
+            flash('Account creato.', category='success')
             
             tipi_struttura = Tipo_Struttura.query.all()
             for i in range(3):

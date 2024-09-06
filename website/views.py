@@ -118,7 +118,7 @@ def ricerca():
     id_camere_libere = (
         db.session.query(Camera.id)
         .outerjoin(occupazioni)
-        .outerjoin(Soggiorno)
+        .join(Soggiorno)
         .filter(
             Camera.data_rimozione.is_(None),
             or_(
@@ -167,25 +167,10 @@ def tuoi_soggiorni():
         .all()
     )
 
-    proprieta = (
-        db.session.query(Proprieta)
-        .outerjoin(Camera)
-        .outerjoin(occupazioni)
-        .join(Soggiorno)
-        .filter(
-            Proprieta.data_rimozione.is_(None),
-            Soggiorno.id_utente == current_user.id,
-            Soggiorno.data_cancellazione.is_(None),
-            datetime.datetime.now() > Soggiorno.check_in,
-        )
-        .distinct()
-    )
-
     return render_template(
         "tuoi_soggiorni.html",
         user=current_user,
         soggiorni=soggiorni,
-        proprieta=proprieta,
         now=datetime.datetime.now(),
     )
 
@@ -246,7 +231,7 @@ def prenota_proprieta():
             db.session.add(pagamento)
             db.session.commit()
 
-            flash("Prenotazione riuscita.", category="success")
+            flash("Prenotazione effettuata.", category="success")
 
             return redirect(url_for("views.tuoi_soggiorni"))
 
@@ -303,49 +288,51 @@ def scrivi_recensione():
         testo = request.form.get("testo")
         proprieta = Proprieta.query.get(id_proprieta)
 
-        if vecchia_recensione:
+        if testo and valutazione:
+            if vecchia_recensione:
+                proprieta.valutazione_media = (
+                    proprieta.valutazione_media * proprieta.num_valutazioni
+                    - vecchia_recensione.valutazione
+                    + int(valutazione)
+                ) / proprieta.num_valutazioni
 
-            proprieta.valutazione_media = (
-                proprieta.valutazione_media * proprieta.num_valutazioni
-                - vecchia_recensione.valutazione
-                + int(valutazione)
-            ) / proprieta.num_valutazioni
+                vecchia_recensione.testo = testo
+                vecchia_recensione.valutazione = valutazione
+                vecchia_recensione.data_ultima_modifica = datetime.datetime.now()
 
-            vecchia_recensione.testo = testo
-            vecchia_recensione.valutazione = valutazione
-            vecchia_recensione.data_ultima_modifica = datetime.datetime.now()
+                db.session.commit()
 
-            db.session.commit()
+                flash("Recensione modificata.", category="success")
+            else:
+                recensione = Recensione(
+                    valutazione=valutazione,
+                    testo=testo,
+                    id_utente=current_user.id,
+                    id_proprieta=proprieta.id,
+                    utente=current_user,
+                    proprieta=proprieta,
+                    data_ultima_modifica=datetime.datetime.now(),
+                )
 
-            flash("Recensione modificata.", category="success")
+                proprieta.valutazione_media = (
+                    proprieta.valutazione_media * proprieta.num_valutazioni
+                    + int(valutazione)
+                ) / (proprieta.num_valutazioni + 1)
+                proprieta.num_valutazioni += 1
+
+                proprietario = proprieta.proprietario
+                proprietario.valutazione_media = (
+                    proprietario.valutazione_media * proprietario.num_valutazioni
+                    + proprieta.valutazione_media
+                ) / (proprietario.num_valutazioni + 1)
+                proprietario.num_valutazioni += 1
+
+                db.session.add(recensione)
+                db.session.commit()
+
+                flash("Recensione pubblicata.", category="success")
         else:
-            recensione = Recensione(
-                valutazione=valutazione,
-                testo=testo,
-                id_utente=current_user.id,
-                id_proprieta=proprieta.id,
-                utente=current_user,
-                proprieta=proprieta,
-                data_ultima_modifica=datetime.datetime.now(),
-            )
-
-            proprieta.valutazione_media = (
-                proprieta.valutazione_media * proprieta.num_valutazioni
-                + int(valutazione)
-            ) / (proprieta.num_valutazioni + 1)
-            proprieta.num_valutazioni += 1
-
-            proprietario = proprieta.proprietario
-            proprietario.valutazione_media = (
-                proprietario.valutazione_media * proprietario.num_valutazioni
-                + proprieta.valutazione_media
-            ) / (proprietario.num_valutazioni + 1)
-            proprietario.num_valutazioni += 1
-
-            db.session.add(recensione)
-            db.session.commit()
-
-            flash("Recensione pubblicata.", category="success")
+            flash("Errore: mancano valutazione e/o testo.", category="error")
 
     return render_template(
         "scrivi_recensione.html",
@@ -492,7 +479,7 @@ def soggiorni_tua_proprieta():
         user=current_user,
         proprieta=proprieta,
         soggiorni=soggiorni,
-        now = datetime.datetime.now()
+        now=datetime.datetime.now(),
     )
 
 
@@ -514,41 +501,50 @@ def aggiungi_proprieta():
     tipi_struttura = Tipo_Struttura.query.all()
 
     if request.method == "POST":
-        proprieta = Proprieta(
-            indirizzo=request.form.get("indirizzo"),
-            id_citta=request.form.get("citta"),
-            id_tipo_struttura=request.form.get("tipo_struttura"),
-            descrizione=request.form.get("descrizione"),
-        )
+        indirizzo = request.form.get("indirizzo")
+        id_citta = request.form.get("citta")
+        id_tipo_struttura = request.form.get("tipo_struttura")
+        descrizione = request.form.get("descrizione")
 
-        if not current_user.proprietario:
-            id_metodo_pagamento = request.form.get("metodo_pagamento")
-            biografia = request.form.get("biografia")
-            telefono = request.form.get("telefono")
-
-            metodo_pagamento = Metodo_Pagamento.query.get(id_metodo_pagamento)
-            proprietario = Proprietario(
-                id=current_user.id,
-                id_metodo_accredito=id_metodo_pagamento,
-                biografia=biografia,
-                telefono=telefono,
+        if indirizzo and id_citta and id_tipo_struttura:
+            proprieta = Proprieta(
+                indirizzo=indirizzo,
+                id_citta=id_citta,
+                id_tipo_struttura=id_tipo_struttura,
+                descrizione=descrizione,
             )
-            proprietario.metodo_accredito = metodo_pagamento
-            proprietario.utente = current_user
 
-            db.session.add(proprietario)
+            if not current_user.proprietario:
+                id_metodo_pagamento = request.form.get("metodo_pagamento")
+                biografia = request.form.get("biografia")
+                telefono = request.form.get("telefono")
 
-            flash("Ora sei proprietario.", category="success")
+                metodo_pagamento = Metodo_Pagamento.query.get(id_metodo_pagamento)
+                proprietario = Proprietario(
+                    id=current_user.id,
+                    id_metodo_accredito=id_metodo_pagamento,
+                    biografia=biografia,
+                    telefono=telefono,
+                )
+                proprietario.metodo_accredito = metodo_pagamento
+                proprietario.utente = current_user
 
-        proprieta.id_proprietario = current_user.proprietario.id
-        proprieta.proprietario = current_user.proprietario
+                db.session.add(proprietario)
 
-        db.session.add(proprieta)
-        db.session.commit()
+                flash("Congratulazioni. Ora sei proprietario.", category="success")
 
-        flash("Proprietà aggiunta.", category="success")
+            proprieta.id_proprietario = current_user.proprietario.id
+            proprieta.proprietario = current_user.proprietario
 
-        return redirect(url_for("views.tue_proprieta"))
+            db.session.add(proprieta)
+            db.session.commit()
+
+            return redirect(url_for("views.modifica_proprieta", id=proprieta.id))
+        else:
+            flash(
+                "Errore. Mancano città e/o tipo struttura e/o l'indirizzo.",
+                category="error",
+            )
 
     return render_template(
         "aggiungi_proprieta.html",
@@ -707,19 +703,21 @@ def rimuovi_proprieta():
 
     return jsonify({})
 
+
 @views.route("/annulla_soggiorno", methods=["GET", "POST"])
 @login_required
 def annulla_soggiorno():
     obj = json.loads(request.data)
     id_soggiorno = obj["id_soggiorno"]
-    
+
     soggiorno = Soggiorno.query.get(id_soggiorno)
-    
+
     soggiorno.data_cancellazione = datetime.datetime.now()
-    
+
     db.session.commit()
-    
+
     return jsonify({})
+
 
 @views.route("/migliori_host", methods=["GET", "POST"])
 @login_required
@@ -738,7 +736,7 @@ def migliori_host():
             + (
                 (10 * valutazione_media_globale.as_scalar())
                 / (Proprietario.num_valutazioni + 10)
-            )
+            ).desc()
         )
         .limit(10)
     )
@@ -761,7 +759,11 @@ def citta_popolari():
         )
         .outerjoin(Proprieta.camere)
         .outerjoin(Camera.soggiorni)
-        .filter(Soggiorno.check_in >= start_date, Soggiorno.check_out <= end_date)
+        .filter(
+            Soggiorno.data_cancellazione.is_(None),
+            Soggiorno.check_in >= start_date,
+            Soggiorno.check_out <= end_date,
+        )
         .group_by(Proprieta.id)
         .order_by(func.count(func.distinct(Soggiorno.id)).desc())
         .limit(5)
@@ -779,6 +781,8 @@ def migliori_proprieta():
 
     proprieta = (
         db.session.query(Proprieta)
+        .join(Proprietario)
+        .filter(Proprieta.data_rimozione.is_(None))
         .order_by(
             (
                 (Proprieta.valutazione_media * Proprietario.num_valutazioni)
@@ -787,7 +791,7 @@ def migliori_proprieta():
             + (
                 (10 * valutazione_media_globale.as_scalar())
                 / (Proprieta.num_valutazioni + 10)
-            )
+            ).desc()
         )
         .limit(10)
     )
@@ -804,6 +808,7 @@ def amenita_apprezzate():
         db.session.query(Amenita)
         .join(Amenita.proprieta)
         .filter(
+            Proprieta.data_rimozione.is_(None),
             Proprieta.valutazione_media >= 4.5,
             Proprieta.num_valutazioni >= 3,
         )

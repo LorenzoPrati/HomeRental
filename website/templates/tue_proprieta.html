@@ -15,13 +15,13 @@
             <p>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</p>
             <p><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
                 ({{proprieta.num_valutazioni}})</p>
-            <a href="{{ url_for('views.modifica_proprieta', id=proprieta.id) }}">Modifica</a>
             <a href="{{ url_for('views.soggiorni_tua_proprieta', id=proprieta.id) }}">Prenotazioni</a>
             <a href="{{ url_for('views.recensioni_tua_proprieta', id=proprieta.id) }}">Recensioni</a>
-            <br>
-            <div class="row justify-content-end">
-                <button class="btn btn-danger" onclick="rimuovi_proprieta({{proprieta.id}})">Elimina</button>
-            </div>
+            
+        </div>
+        <div class="card-footer">
+            <a class="btn btn-dark mr-1" href="{{ url_for('views.modifica_proprieta', id=proprieta.id) }}">Modifica</a>
+            <button class="btn btn-danger" onclick="rimuovi_proprieta({{proprieta.id}})">Elimina</button>
         </div>
     </div>
 </div>
@@ -29,17 +29,17 @@
 {% endfor %}
 </div>
 <div class="row justify-content-center">
-    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary">Aggiungi proprieta</a>
+    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary mt-4">Aggiungi proprieta</a>
 </div>
 {% else %}
 <h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.</h2>
 {% if user.metodi_pagamento %}
 <div class="row justify-content-center">
-    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary">Diventa proprietario</a>
+    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary mt-4">Diventa proprietario</a>
 </div>
 {% else %}
 <div class="row justify-content-center">
-    <a href="{{ url_for('views.metodi_pagamento', flag=flag) }}" class="btn btn-primary">Diventa
+    <a href="{{ url_for('views.metodi_pagamento', flag=flag) }}" class="btn btn-primary mt-4">Diventa
         proprietario</a>
 </div>
 {% endif %}
