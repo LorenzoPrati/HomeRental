@@ -170,7 +170,8 @@ class Soggiorno(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     check_in: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
     check_out: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))
-    num_ospiti: Mapped[int] = mapped_column()
+    num_ospiti: Mapped[int] = mapped_column(Integer())
+    prezzo: Mapped[int] = mapped_column(Integer())
     id_utente: Mapped[int] = mapped_column(ForeignKey("utenti.id"))
     data_cancellazione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
@@ -285,7 +286,7 @@ class Coupon(db.Model):
 class Pagamento(db.Model):
     __tablename__ = "pagamenti"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), primary_key=True)
     id_metodo_addebito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_metodo_accredito: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"))
     id_coupon: Mapped[int] = mapped_column(
@@ -294,8 +295,6 @@ class Pagamento(db.Model):
     data_creazione: Mapped[datetime.datetime] = mapped_column(
         DateTime(timezone=True), default=func.now()
     )
-    id_soggiorno: Mapped[int] = mapped_column(ForeignKey("soggiorni.id"), nullable=True)
-    totale: Mapped[int] = mapped_column()
 
     soggiorno: Mapped["Soggiorno"] = relationship(back_populates="pagamento")
     metodo_addebito: Mapped["Metodo_Pagamento"] = relationship(
@@ -307,4 +306,7 @@ class Pagamento(db.Model):
     coupon: Mapped[Optional["Coupon"]] = relationship(back_populates="pagamento")
 
     def get_totale_pagato(self):
-        return self.totale - (self.totale * self.coupon.percentuale_sconto / 100)
+        if self.coupon:
+            return self.soggiorno.prezzo - (self.soggiorno.prezzo * self.coupon.percentuale_sconto / 100)
+        else:
+            return self.soggiorno.prezzo

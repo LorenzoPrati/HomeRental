@@ -18,12 +18,14 @@
 <div class="row">
     {% for coupon in user.coupons %}
     {% if not coupon.pagamento %}
-    <div class="col-4 p-2">
+    <div class="card-deck p-1">
         <div class="card">
-            <div class="card-body">
+            <div class="card-header">
                 <h6 class="card-title">Sconto del {{coupon.percentuale_sconto}}%</h6>
+            </div>
+            <div class="card-body">
                 {% for tipo_struttura in coupon.tipi_struttura %}
-                <small class="mr-2">{{tipo_struttura.nome}}</small>
+                <p class="mr-2">{{tipo_struttura.nome}}</p>
                 {% endfor %}
             </div>
         </div>

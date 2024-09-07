@@ -43,27 +43,38 @@ def home():
         check_in = request.form.get("check_in")
         check_out = request.form.get("check_out")
         num_ospiti = request.form.get("num_ospiti")
-        tipo_struttura = request.form.get("tipo_struttura")
+        tipi_struttura = request.form.getlist("tipi_struttura")
         amenita = request.form.getlist("amenita")
 
         if check_in and check_out:
-            if not num_ospiti:
-                num_ospiti = 1
-            elif int(num_ospiti) <= 0:
-                num_ospiti = 1
-            return redirect(
-                url_for(
-                    "views.ricerca",
-                    citta=citta,
-                    check_in=check_in,
-                    check_out=check_out,
-                    num_ospiti=num_ospiti,
-                    tipo_struttura=tipo_struttura,
-                    amenita_selezionate=amenita,
+            start_date = datetime.datetime.strptime(check_in, "%Y-%m-%dT%H:%M")
+            end_date = datetime.datetime.strptime(check_out, "%Y-%m-%dT%H:%M")
+
+            if (
+                start_date
+                and end_date
+                and start_date > datetime.datetime.now()
+                and end_date > start_date
+            ):
+                if not num_ospiti:
+                    num_ospiti = 1
+                elif int(num_ospiti) <= 0:
+                    num_ospiti = 1
+                return redirect(
+                    url_for(
+                        "views.ricerca",
+                        citta=citta,
+                        check_in=check_in,
+                        check_out=check_out,
+                        num_ospiti=num_ospiti,
+                        tipi_struttura=tipi_struttura,
+                        amenita=amenita,
+                    )
                 )
-            )
+            else:
+                flash("Errore: Date non valide.", category="error")
         else:
-            flash("Inserisci delle date di inizio e fine soggiorno", category="error")
+            flash("Errore: Inserisce delle date.", category="error")
 
     citta = Citta.query.all()
     tipi_struttura = Tipo_Struttura.query.all()
@@ -106,20 +117,20 @@ def ricerca():
     check_in = request.args.get("check_in")
     check_out = request.args.get("check_out")
     num_ospiti = request.args.get("num_ospiti")
-    tipo_struttura = request.args.getlist("tipo_struttura")
+    tipi_struttura = request.args.getlist("tipi_struttura")
     amenita = request.args.getlist("amenita")
 
     if not citta:
         citta = [c.nome for c in db.session.query(Citta).all()]
-    if not tipo_struttura:
-        tipo_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
+    if not tipi_struttura:
+        tipi_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
 
     if not amenita:
         id_proprieta_valide = (
             db.session.query(Proprieta.id)
             .outerjoin(servizi)
             .filter(Proprieta.id_citta.in_(citta))
-            .filter(Proprieta.id_tipo_struttura.in_(tipo_struttura))
+            .filter(Proprieta.id_tipo_struttura.in_(tipi_struttura))
             .distinct()
             .subquery()
         )
@@ -131,7 +142,7 @@ def ricerca():
             .group_by(Proprieta.id)
             .having(func.count() == len(amenita))
             .filter(Proprieta.id_citta.in_(citta))
-            .filter(Proprieta.id_tipo_struttura.in_(tipo_struttura))
+            .filter(Proprieta.id_tipo_struttura.in_(tipi_struttura))
             .distinct()
             .subquery()
         )
@@ -139,7 +150,7 @@ def ricerca():
     id_camere_libere = (
         db.session.query(Camera.id)
         .outerjoin(occupazioni)
-        .join(Soggiorno)
+        .outerjoin(Soggiorno)
         .filter(
             Camera.data_rimozione.is_(None),
             or_(
@@ -206,56 +217,6 @@ def prenota_proprieta():
     id_proprieta = request.args.get("id_proprieta")
     proprieta = Proprieta.query.get(id_proprieta)
 
-    if request.method == "POST":
-        id_camere = request.form.getlist("camere_prenotate")
-        id_metodo_pagamento = request.form.get("id_metodo_pagamento")
-        id_coupon = request.form.get("id_coupon")
-
-        start_date = datetime.datetime.strptime(check_in, "%Y-%m-%dT%H:%M")
-        end_date = datetime.datetime.strptime(check_out, "%Y-%m-%dT%H:%M")
-        delta = end_date - start_date
-        num_notti = delta.days
-
-        camere = db.session.query(Camera).filter(Camera.id.in_(id_camere)).all()
-
-        totale = 0
-        for c in camere:
-            totale += c.prezzo_per_notte * num_notti
-
-        if not camere or not id_metodo_pagamento:
-            flash(
-                "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere e/o metodo di pagamento).",
-                category="error",
-            )
-        else:
-            soggiorno = Soggiorno(
-                check_in=check_in,
-                check_out=check_out,
-                num_ospiti=num_ospiti,
-                id_utente=current_user.id,
-                utente=current_user,
-                camere=camere,
-            )
-            db.session.add(soggiorno)
-            db.session.commit()
-
-            pagamento = Pagamento(
-                totale=totale,
-                id_soggiorno=soggiorno.id,
-                id_metodo_addebito=id_metodo_pagamento,
-                id_metodo_accredito=proprieta.proprietario.id_metodo_accredito,
-            )
-            if id_coupon:
-                pagamento.id_coupon = id_coupon
-                coupon = Coupon.query.get(id_coupon)
-                pagamento.coupon = coupon
-            db.session.add(pagamento)
-            db.session.commit()
-
-            flash("Prenotazione effettuata.", category="success")
-
-            return redirect(url_for("views.tuoi_soggiorni"))
-
     camere = (
         db.session.query(Camera)
         .outerjoin(occupazioni)
@@ -272,6 +233,56 @@ def prenota_proprieta():
         )
         .distinct()
     )
+
+    if request.method == "POST":
+        id_camere = request.form.getlist("camere_prenotate")
+        id_metodo_pagamento = request.form.get("id_metodo_pagamento")
+        id_coupon = request.form.get("id_coupon")
+
+        start_date = datetime.datetime.strptime(check_in, "%Y-%m-%dT%H:%M")
+        end_date = datetime.datetime.strptime(check_out, "%Y-%m-%dT%H:%M")
+        delta = end_date - start_date
+        num_notti = delta.days
+
+        if id_camere and id_metodo_pagamento:
+            camere = db.session.query(Camera).filter(Camera.id.in_(id_camere)).all()
+
+            prezzo = 0
+            for c in camere:
+                prezzo += c.prezzo_per_notte * num_notti
+
+            soggiorno = Soggiorno(
+                check_in=check_in,
+                check_out=check_out,
+                num_ospiti=num_ospiti,
+                prezzo=prezzo,
+                id_utente=current_user.id,
+                utente=current_user,
+                camere=camere,
+            )
+            db.session.add(soggiorno)
+            db.session.commit()
+
+            pagamento = Pagamento(
+                id=soggiorno.id,
+                id_metodo_addebito=id_metodo_pagamento,
+                id_metodo_accredito=proprieta.proprietario.id_metodo_accredito,
+            )
+            if id_coupon:
+                pagamento.id_coupon = id_coupon
+                coupon = Coupon.query.get(id_coupon)
+                pagamento.coupon = coupon
+            db.session.add(pagamento)
+            db.session.commit()
+
+            flash("Prenotazione effettuata.", category="success")
+
+            return redirect(url_for("views.tuoi_soggiorni"))
+        else:
+            flash(
+                "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere e/o metodo di pagamento) e/o camere non più libere.",
+                category="error",
+            )
 
     coupons = (
         db.session.query(Coupon)
@@ -441,8 +452,6 @@ def aggiungi_carta():
         db.session.add(metodo_pagamento)
         db.session.commit()
 
-        flash("Carta di credito aggiunta.", category="success")
-
         if flag:
             return redirect(url_for("views.aggiungi_proprieta"))
         else:
@@ -471,7 +480,6 @@ def aggiungi_paypal():
 
         db.session.add(metodo_pagamento)
         db.session.commit()
-        flash("Conto Paypal aggiunto.", category="success")
 
         if flag:
             return redirect(url_for("views.aggiungi_proprieta"))
@@ -492,6 +500,7 @@ def soggiorni_tua_proprieta():
         .outerjoin(occupazioni)
         .join(Camera)
         .filter(Camera.id_proprieta == id_proprieta)
+        .order_by(Soggiorno.check_in)
         .distinct()
     )
 
@@ -584,15 +593,18 @@ def modifica_proprieta():
     amenita = Amenita.query.all()
 
     if request.method == "POST":
-        proprieta.descrizione = request.form.get("descrizione")
+        descrizione = request.form.get("descrizione")
+        if descrizione:
+            proprieta.descrizione = descrizione
         db.session.commit()
 
-    return render_template(
-        "modifica_proprieta.html",
-        user=current_user,
-        proprieta=proprieta,
-        amenita=amenita,
-    )
+    if proprieta.proprietario.id == current_user.id:
+        return render_template(
+            "modifica_proprieta.html",
+            user=current_user,
+            proprieta=proprieta,
+            amenita=amenita,
+        )
 
 
 @views.route("/rimuovi_camera", methods=["POST"])
@@ -733,7 +745,8 @@ def annulla_soggiorno():
 
     soggiorno = Soggiorno.query.get(id_soggiorno)
 
-    soggiorno.data_cancellazione = datetime.datetime.now()
+    if not soggiorno.data_cancellazione:
+        soggiorno.data_cancellazione = datetime.datetime.now()
 
     db.session.commit()
 

@@ -42,7 +42,7 @@
     <div class="form-group">
       {% for amenita in amenita %}
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" name="amenita_selezionate"
+        <input class="form-check-input" type="checkbox" id="inlineCheckbox1" name="amenita"
           value="{{amenita.nome}}">
         <label class="form-check-label" for="inlineCheckbox1">{{amenita.nome}}</label>
       </div>
@@ -53,9 +53,9 @@
     <div class="form-group">
       {% for tipo_struttura in tipi_struttura %}
       <div class="form-check form-check-inline">
-        <input class="form-check-input" type="radio" id="inlineCheckbox1" name="tipo_struttura"
+        <input class="form-check-input" type="checkbox" id="inlineCheckbox2" name="tipi_struttura"
           value="{{tipo_struttura.nome}}">
-        <label class="form-check-label" for="inlineCheckbox1">{{tipo_struttura.nome}}</label>
+        <label class="form-check-label" for="inlineCheckbox2">{{tipo_struttura.nome}}</label>
       </div>
       {% endfor %}
     </div>
@@ -79,7 +79,7 @@
       <p class="card-text">Da: {{soggiorno.get_stringa_check_in()}} a: {{soggiorno.get_stringa_check_out()}}</p>
       <p class="card-text">Camere prenotate:</p>
       {% for c in soggiorno.camere %}
-        <p class="card-text">{{c.ordinale}}</p>
+        {{c.ordinale}} - 
       {% endfor %}
     </div>
   </div>

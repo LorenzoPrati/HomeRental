@@ -18,7 +18,7 @@
         <tbody>
             <tr>
                 <td>{{pagamento.data_creazione}}</td>
-                <td>{{pagamento.totale}}</td>
+                <td>{{pagamento.soggiorno.prezzo}}</td>
                 <td>
                     {% if pagamento.coupon %}
                     {{pagamento.get_totale_pagato()}}
