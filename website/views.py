@@ -151,8 +151,8 @@ def ricerca():
             .cte()
         )
 
-    id_camere_libere = (
-        db.session.query(Camera.id)
+    camere_libere = (
+        db.session.query(Camera)
         .join(proprieta_valide) # on clause ?
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
@@ -166,19 +166,17 @@ def ricerca():
             ),
         )
         .distinct()
-        .subquery()
+        .cte()
     )
 
-    lista_proprieta = (
-        db.session.query(Proprieta)
-        .join(Camera)
-        .filter(
-            Camera.id.in_(id_camere_libere),
-        )
-        .group_by(Proprieta.id)
-        .having(func.sum(Camera.num_ospiti) >= num_ospiti)
-        .all()
+    id_proprieta = (
+        db.session.query(camere_libere.c.id_proprieta)
+        .group_by(camere_libere.c.id_proprieta)
+        .having(func.sum(camere_libere.c.num_ospiti) >= num_ospiti)
+        .subquery()
     )
+    
+    lista_proprieta = db.session.query(Proprieta).filter(Proprieta.id.in_(id_proprieta)).all()
 
     return render_template(
         "ricerca.html",
