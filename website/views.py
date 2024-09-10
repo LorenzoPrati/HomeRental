@@ -169,14 +169,15 @@ def ricerca():
         .cte()
     )
 
-    id_proprieta = (
-        db.session.query(camere_libere.c.id_proprieta)
+    lista_proprieta = (
+        db.session.query(Proprieta)
+        .join(camere_libere)
         .group_by(camere_libere.c.id_proprieta)
         .having(func.sum(camere_libere.c.num_ospiti) >= num_ospiti)
-        .subquery()
+        .all()
     )
     
-    lista_proprieta = db.session.query(Proprieta).filter(Proprieta.id.in_(id_proprieta)).all()
+    #lista_proprieta = db.session.query(Proprieta).filter(Proprieta.id.in_(id_proprieta)).all()
 
     return render_template(
         "ricerca.html",
