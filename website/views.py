@@ -94,7 +94,7 @@ def home():
     giorni = 0
     ore = 0
     if soggiorno:
-        tempo_mancante = soggiorno.check_out - datetime.datetime.now()
+        tempo_mancante = soggiorno.check_in - datetime.datetime.now()
         giorni = tempo_mancante.days
         ore = tempo_mancante.seconds // 3600
 
@@ -132,14 +132,14 @@ def ricerca():
                 Proprieta.id_proprietario != current_user.id,
                 Proprieta.data_rimozione.is_(None),
                 Proprieta.id_citta.in_(citta),
-                Proprieta.id_tipo_struttura.in_(tipi_struttura)
+                Proprieta.id_tipo_struttura.in_(tipi_struttura),
             )
             .cte("proprieta_valide")
         )
     else:
         proprieta_valide = (
             db.session.query(Proprieta)
-            .join(servizi) #outer ?
+            .join(servizi)  # outer ?
             .filter(
                 Proprieta.id_proprietario != current_user.id,
                 Proprieta.data_rimozione.is_(None),
@@ -148,21 +148,23 @@ def ricerca():
                 servizi.c.id_amenita.in_(amenita),
             )
             .group_by(Proprieta.id)
-            .having(func.count() == len(amenita)) #func.count(distinct servizi.c.id_amenita)
+            .having(
+                func.count() == len(amenita)
+            )  # func.count(distinct servizi.c.id_amenita)
             .distinct()
             .cte("proprieta_valide")
         )
 
     camere_libere = (
         db.session.query(Camera)
-        .join(proprieta_valide) # on clause ?
+        .join(proprieta_valide)  # on clause ?
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
         .filter(
             Camera.data_rimozione.is_(None),
             or_(
                 Soggiorno.id.is_(None),
-                Soggiorno.data_cancellazione.isnot(None), #is ?
+                Soggiorno.data_cancellazione.isnot(None),  # is ?
                 check_in > Soggiorno.check_out,
                 check_out < Soggiorno.check_in,
             ),
@@ -275,7 +277,7 @@ def prenota_proprieta():
                 pagamento.id_coupon = id_coupon
                 coupon = Coupon.query.get(id_coupon)
                 pagamento.coupon = coupon
-            
+
             db.session.add(soggiorno)
             db.session.commit()
 
@@ -326,11 +328,20 @@ def scrivi_recensione():
 
         if testo and valutazione:
             if vecchia_recensione:
+                vecchia_valutazione_media = proprieta.valutazione_media
+
                 proprieta.valutazione_media = (
                     proprieta.valutazione_media * proprieta.num_valutazioni
                     - vecchia_recensione.valutazione
                     + int(valutazione)
                 ) / proprieta.num_valutazioni
+
+                proprietario = proprieta.proprietario
+                proprietario.valutazione_media = (
+                    proprietario.valutazione_media * proprietario.num_valutazioni
+                    - vecchia_valutazione_media
+                    + proprieta.valutazione_media
+                ) / proprietario.num_valutazioni
 
                 vecchia_recensione.testo = testo
                 vecchia_recensione.valutazione = valutazione
@@ -437,8 +448,12 @@ def aggiungi_carta():
         nome = request.form.get("nome")
         cognome = request.form.get("cognome")
         data_scadenza = request.form.get("data_scadenza")
-        
-        carta = db.session.query(Carta_Credito).filter(Carta_Credito.numero_carta == numero_carta).first()
+
+        carta = (
+            db.session.query(Carta_Credito)
+            .filter(Carta_Credito.numero_carta == numero_carta)
+            .first()
+        )
         if carta:
             flash("Carta già registrata.", category="error")
         else:
@@ -464,7 +479,7 @@ def aggiungi_carta():
                 return redirect(url_for("views.aggiungi_proprieta"))
             else:
                 return redirect(url_for("views.metodi_pagamento"))
-        
+
     return render_template("aggiungi_carta.html", user=current_user)
 
 
@@ -475,7 +490,7 @@ def aggiungi_paypal():
 
     if request.method == "POST":
         email = request.form.get("email")
-        
+
         paypal = db.session.query(Paypal).filter(Paypal.email == email).first()
         if paypal:
             flash("Paypal già registrato.", category="error")
@@ -855,8 +870,8 @@ def amenita_apprezzate():
         .join(Amenita.proprieta)
         .filter(
             Proprieta.data_rimozione.is_(None),
-            Proprieta.valutazione_media >= 4.5,
-            Proprieta.num_valutazioni >= 3,
+            Proprieta.valutazione_media >= 2,
+            Proprieta.num_valutazioni >= 1,
         )
         .group_by(Amenita.nome)
         .order_by(func.count().desc())

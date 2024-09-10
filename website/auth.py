@@ -67,18 +67,58 @@ def sign_up():
                 """For testing, insert basic cities, amenities and structures."""
                 citta = Citta.query.all()
                 if not citta:
-                    for c in ["Milano", "Roma", "Bari", "Monza", "Cagliari"]:
+                    for c in [
+                        "Roma",
+                        "Milano",
+                        "Bari",
+                        "Taranto",
+                        "Torino",
+                        "Palermo",
+                        "Firenze",
+                        "Catania",
+                        "Verona",
+                        "Venezia",
+                        "Messina",
+                        "Monza",
+                        "Cagliari",
+                        "Amalfi",
+                        "Napoli",
+                        "Tropea",
+                        "Gallipoli",
+                        "Cortina",
+                        "Ravenna",
+                    ]:
                         db.session.add(Citta(nome=c))
+                        db.session.commit()
                 amenita = Amenita.query.all()
                 if not amenita:
-                    for a in ["wi-fi", "piscina", "tv"]:
+                    for a in [
+                        "wi-fi",
+                        "piscina",
+                        "parcheggio",
+                        "cucina",
+                        "vasca",
+                        "climatizzatore",
+                        "lavatrice",
+                        "self-check-in",
+                        "tv",
+                        "camino",
+                    ]:
                         db.session.add(Amenita(nome=a))
+                        db.session.commit()
                 tipi_struttura = Tipo_Struttura.query.all()
                 if not tipi_struttura:
-                    for t in ["Appartamento", "Cottage", "Baita"]:
+                    for t in [
+                        "appartamento",
+                        "villa",
+                        "baita",
+                        "cottage",
+                        "castello",
+                        "barca",
+                        "tenda",
+                    ]:
                         db.session.add(Tipo_Struttura(nome=t))
-
-                db.session.commit()
+                        db.session.commit()
 
             tipi_struttura = Tipo_Struttura.query.all()
             if tipi_struttura:
