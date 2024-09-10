@@ -250,7 +250,7 @@ class Paypal(db.Model):
     __tablename__ = "paypals"
 
     id: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"), primary_key=True)
-    email: Mapped[str] = mapped_column(String(256), unique=True)
+    email: Mapped[str] = mapped_column(String(256))
 
     metodo_pagamento: Mapped["Metodo_Pagamento"] = relationship(back_populates="paypal")
 
@@ -259,7 +259,7 @@ class Carta_Credito(db.Model):
     __tablename__ = "carte_credito"
 
     id: Mapped[int] = mapped_column(ForeignKey("metodi_pagamento.id"), primary_key=True)
-    numero_carta: Mapped[str] = mapped_column(String(256), unique=True)
+    numero_carta: Mapped[str] = mapped_column(String(256))
     nome: Mapped[str] = mapped_column(String(256))
     cognome: Mapped[str] = mapped_column(String(256))
     data_scadenza: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True))

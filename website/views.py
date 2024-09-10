@@ -129,17 +129,19 @@ def ricerca():
         proprieta_valide = (
             db.session.query(Proprieta)
             .filter(
+                Proprieta.id_proprietario != current_user.id,
                 Proprieta.data_rimozione.is_(None),
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura)
             )
-            .cte()
+            .cte("proprieta_valide")
         )
     else:
         proprieta_valide = (
             db.session.query(Proprieta)
             .join(servizi) #outer ?
             .filter(
+                Proprieta.id_proprietario != current_user.id,
                 Proprieta.data_rimozione.is_(None),
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura),
@@ -148,7 +150,7 @@ def ricerca():
             .group_by(Proprieta.id)
             .having(func.count() == len(amenita)) #func.count(distinct servizi.c.id_amenita)
             .distinct()
-            .cte()
+            .cte("proprieta_valide")
         )
 
     camere_libere = (
@@ -166,7 +168,7 @@ def ricerca():
             ),
         )
         .distinct()
-        .cte()
+        .cte("camere_libere")
     )
 
     lista_proprieta = (
@@ -176,8 +178,6 @@ def ricerca():
         .having(func.sum(camere_libere.c.num_ospiti) >= num_ospiti)
         .all()
     )
-    
-    #lista_proprieta = db.session.query(Proprieta).filter(Proprieta.id.in_(id_proprieta)).all()
 
     return render_template(
         "ricerca.html",
@@ -435,7 +435,7 @@ def aggiungi_carta():
         nome = request.form.get("nome")
         cognome = request.form.get("cognome")
         data_scadenza = request.form.get("data_scadenza")
-
+        
         metodo_pagamento = Metodo_Pagamento(
             id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.name
         )
@@ -458,7 +458,7 @@ def aggiungi_carta():
             return redirect(url_for("views.aggiungi_proprieta"))
         else:
             return redirect(url_for("views.metodi_pagamento"))
-
+        
     return render_template("aggiungi_carta.html", user=current_user)
 
 
