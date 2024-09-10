@@ -262,19 +262,21 @@ def prenota_proprieta():
                 utente=current_user,
                 camere=camere,
             )
-            db.session.add(soggiorno)
-            db.session.commit()
+            """db.session.add(soggiorno)
+            db.session.commit()"""
 
             pagamento = Pagamento(
-                id=soggiorno.id,
                 id_metodo_addebito=id_metodo_pagamento,
                 id_metodo_accredito=proprieta.proprietario.id_metodo_accredito,
             )
+            pagamento.id = soggiorno.id
+            pagamento.soggiorno = soggiorno
             if id_coupon:
                 pagamento.id_coupon = id_coupon
                 coupon = Coupon.query.get(id_coupon)
                 pagamento.coupon = coupon
-            db.session.add(pagamento)
+            
+            db.session.add(soggiorno)
             db.session.commit()
 
             flash("Prenotazione effettuata.", category="success")
@@ -436,28 +438,32 @@ def aggiungi_carta():
         cognome = request.form.get("cognome")
         data_scadenza = request.form.get("data_scadenza")
         
-        metodo_pagamento = Metodo_Pagamento(
-            id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.name
-        )
-
-        carta = Carta_Credito(
-            numero_carta=numero_carta,
-            nome=nome,
-            cognome=cognome,
-            data_scadenza=data_scadenza,
-        )
-        carta.id = metodo_pagamento.id
-
-        metodo_pagamento.carta_credito = carta
-        metodo_pagamento.utente = current_user
-
-        db.session.add(metodo_pagamento)
-        db.session.commit()
-
-        if flag:
-            return redirect(url_for("views.aggiungi_proprieta"))
+        carta = db.session.query(Carta_Credito).filter(Carta_Credito.numero_carta == numero_carta).first()
+        if carta:
+            flash("Carta già registrata.", category="error")
         else:
-            return redirect(url_for("views.metodi_pagamento"))
+            metodo_pagamento = Metodo_Pagamento(
+                id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.CARTA_CREDITO.name
+            )
+
+            carta = Carta_Credito(
+                numero_carta=numero_carta,
+                nome=nome,
+                cognome=cognome,
+                data_scadenza=data_scadenza,
+            )
+            carta.id = metodo_pagamento.id
+
+            metodo_pagamento.carta_credito = carta
+            metodo_pagamento.utente = current_user
+
+            db.session.add(metodo_pagamento)
+            db.session.commit()
+
+            if flag:
+                return redirect(url_for("views.aggiungi_proprieta"))
+            else:
+                return redirect(url_for("views.metodi_pagamento"))
         
     return render_template("aggiungi_carta.html", user=current_user)
 
@@ -469,24 +475,28 @@ def aggiungi_paypal():
 
     if request.method == "POST":
         email = request.form.get("email")
-
-        metodo_pagamento = Metodo_Pagamento(
-            id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.PAYPAL.name
-        )
-
-        paypal = Paypal(email=email)
-        paypal.id = metodo_pagamento.id
-
-        metodo_pagamento.paypal = paypal
-        metodo_pagamento.utente = current_user
-
-        db.session.add(metodo_pagamento)
-        db.session.commit()
-
-        if flag:
-            return redirect(url_for("views.aggiungi_proprieta"))
+        
+        paypal = db.session.query(Paypal).filter(Paypal.email == email).first()
+        if paypal:
+            flash("Paypal già registrato.", category="error")
         else:
-            return redirect(url_for("views.metodi_pagamento"))
+            metodo_pagamento = Metodo_Pagamento(
+                id_utente=current_user.id, tipo=Tipo_Metodo_Pagamento.PAYPAL.name
+            )
+
+            paypal = Paypal(email=email)
+            paypal.id = metodo_pagamento.id
+
+            metodo_pagamento.paypal = paypal
+            metodo_pagamento.utente = current_user
+
+            db.session.add(metodo_pagamento)
+            db.session.commit()
+
+            if flag:
+                return redirect(url_for("views.aggiungi_proprieta"))
+            else:
+                return redirect(url_for("views.metodi_pagamento"))
 
     return render_template("aggiungi_paypal.html", user=current_user)
 

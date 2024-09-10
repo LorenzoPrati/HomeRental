@@ -40,9 +40,10 @@ def sign_up():
         password1 = request.form.get('password1')
         password2 = request.form.get('password2')
         
-        utente = Utente.query.filter_by(email=email).first()
-        if utente:
-            flash('Email in uso.', category='error')
+        utente_stessa_mail = Utente.query.filter_by(email=email).first()
+        utente_stesso_nick = Utente.query.filter_by(nome_utente=nome_utente).first()
+        if utente_stessa_mail or utente_stesso_nick:
+            flash('Email o nome_utente in uso.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match', category='error') 
         else:
