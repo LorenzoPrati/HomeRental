@@ -126,36 +126,41 @@ def ricerca():
         tipi_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
 
     if not amenita:
-        id_proprieta_valide = (
-            db.session.query(Proprieta.id)
-            .outerjoin(servizi)
-            .filter(Proprieta.id_citta.in_(citta))
-            .filter(Proprieta.id_tipo_struttura.in_(tipi_struttura))
-            .distinct()
-            .subquery()
+        proprieta_valide = (
+            db.session.query(Proprieta)
+            .filter(
+                Proprieta.data_rimozione.is_(None),
+                Proprieta.id_citta.in_(citta),
+                Proprieta.id_tipo_struttura.in_(tipi_struttura)
+            )
+            .cte()
         )
     else:
-        id_proprieta_valide = (
-            db.session.query(Proprieta.id)
-            .outerjoin(servizi)
-            .filter(servizi.c.id_amenita.in_(amenita))
+        proprieta_valide = (
+            db.session.query(Proprieta)
+            .join(servizi) #outer ?
+            .filter(
+                Proprieta.data_rimozione.is_(None),
+                Proprieta.id_citta.in_(citta),
+                Proprieta.id_tipo_struttura.in_(tipi_struttura),
+                servizi.c.id_amenita.in_(amenita),
+            )
             .group_by(Proprieta.id)
-            .having(func.count() == len(amenita))
-            .filter(Proprieta.id_citta.in_(citta))
-            .filter(Proprieta.id_tipo_struttura.in_(tipi_struttura))
+            .having(func.count() == len(amenita)) #func.count(distinct servizi.c.id_amenita)
             .distinct()
-            .subquery()
+            .cte()
         )
 
     id_camere_libere = (
         db.session.query(Camera.id)
+        .join(proprieta_valide) # on clause ?
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
         .filter(
             Camera.data_rimozione.is_(None),
             or_(
                 Soggiorno.id.is_(None),
-                Soggiorno.data_cancellazione.is_(None),
+                Soggiorno.data_cancellazione.isnot(None), #is ?
                 check_in > Soggiorno.check_out,
                 check_out < Soggiorno.check_in,
             ),
@@ -169,8 +174,6 @@ def ricerca():
         .join(Camera)
         .filter(
             Camera.id.in_(id_camere_libere),
-            Proprieta.id.in_(id_proprieta_valide),
-            Proprieta.data_rimozione.is_(None),
         )
         .group_by(Proprieta.id)
         .having(func.sum(Camera.num_ospiti) >= num_ospiti)
@@ -226,7 +229,7 @@ def prenota_proprieta():
             Camera.id_proprieta == proprieta.id,
             or_(
                 Soggiorno.id.is_(None),
-                Soggiorno.data_cancellazione.is_(None),
+                Soggiorno.data_cancellazione.isnot(None),
                 check_in > Soggiorno.check_out,
                 check_out < Soggiorno.check_in,
             ),
