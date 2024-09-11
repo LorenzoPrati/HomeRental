@@ -161,6 +161,7 @@ def ricerca():
                 Utente.nome.label("nome"),
                 Utente.cognome.label("cognome"),
             )
+            .select_from(Proprieta)
             .join(Proprietario)
             .join(Utente)
             .join(servizi)  # outer ?
@@ -202,10 +203,6 @@ def ricerca():
         )
         .cte("camere_libere")
     )
-
-    # res = db.session.execute(camere_libere).fetchall()
-
-    # lista_proprieta = []
 
     lista_proprieta = (
         select(
