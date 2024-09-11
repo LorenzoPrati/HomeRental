@@ -21,6 +21,7 @@ from .models import (
     Proprietario,
     Camera,
     Amenita,
+    Utente,
     servizi,
     Citta,
     Soggiorno,
@@ -29,7 +30,7 @@ from .models import (
     spendibilita_coupons,
 )
 from . import db
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, select
 import datetime
 
 views = Blueprint("views", __name__)
@@ -127,8 +128,20 @@ def ricerca():
 
     if not amenita:
         proprieta_valide = (
-            db.session.query(Proprieta)
-            .filter(
+            select(
+                Proprieta.id.label("id"),
+                Proprieta.id_citta.label("id_citta"),
+                Proprieta.indirizzo.label("indirizzo"),
+                Proprieta.id_tipo_struttura.label("id_tipo_struttura"),
+                Proprieta.valutazione_media.label("valutazione_media"),
+                Proprieta.num_valutazioni.label("num_valutazioni"),
+                Utente.nome.label("nome"),
+                Utente.cognome.label("cognome"),
+            )
+            .select_from(Proprieta)
+            .join(Proprietario)
+            .join(Utente)
+            .where(
                 Proprieta.id_proprietario != current_user.id,
                 Proprieta.data_rimozione.is_(None),
                 Proprieta.id_citta.in_(citta),
@@ -138,9 +151,20 @@ def ricerca():
         )
     else:
         proprieta_valide = (
-            db.session.query(Proprieta)
+            select(
+                Proprieta.id.label("id"),
+                Proprieta.id_citta.label("id_citta"),
+                Proprieta.indirizzo.label("indirizzo"),
+                Proprieta.id_tipo_struttura.label("id_tipo_struttura"),
+                Proprieta.valutazione_media.label("valutazione_media"),
+                Proprieta.num_valutazioni.label("num_valutazioni"),
+                Utente.nome.label("nome"),
+                Utente.cognome.label("cognome"),
+            )
+            .join(Proprietario)
+            .join(Utente)
             .join(servizi)  # outer ?
-            .filter(
+            .where(
                 Proprieta.id_proprietario != current_user.id,
                 Proprieta.data_rimozione.is_(None),
                 Proprieta.id_citta.in_(citta),
@@ -155,9 +179,16 @@ def ricerca():
             .cte("proprieta_valide")
         )
 
+    # res = db.session.execute(proprieta_valide).fetchall()
+
     camere_libere = (
-        db.session.query(Camera)
-        .join(proprieta_valide)  # on clause ?
+        select(
+            Camera.id.distinct(),
+            Camera.num_ospiti.label("num_ospiti"),
+            proprieta_valide,
+        )
+        .select_from(proprieta_valide)
+        .join(Camera, proprieta_valide.c.id == Camera.id_proprieta)  # on clause ?
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
         .filter(
@@ -169,17 +200,30 @@ def ricerca():
                 check_out < Soggiorno.check_in,
             ),
         )
-        .distinct()
         .cte("camere_libere")
     )
 
+    # res = db.session.execute(camere_libere).fetchall()
+
+    # lista_proprieta = []
+
     lista_proprieta = (
-        db.session.query(Proprieta)
-        .join(camere_libere)
-        .group_by(camere_libere.c.id_proprieta)
+        select(
+            camere_libere.c.id,
+            camere_libere.c.id_citta.label("id_citta"),
+            camere_libere.c.indirizzo.label("indirizzo"),
+            camere_libere.c.id_tipo_struttura.label("id_tipo_struttura"),
+            camere_libere.c.nome.label("nome"),
+            camere_libere.c.cognome.label("cognome"),
+            camere_libere.c.valutazione_media.label("valutaione_media"),
+            camere_libere.c.num_valutazioni.label("num_valutazioni"),
+        )
+        .select_from(camere_libere)
+        .group_by(camere_libere.c.id)
         .having(func.sum(camere_libere.c.num_ospiti) >= num_ospiti)
-        .all()
     )
+
+    lista_proprieta = db.session.execute(lista_proprieta).fetchall()
 
     return render_template(
         "ricerca.html",
