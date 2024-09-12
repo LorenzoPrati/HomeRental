@@ -624,9 +624,10 @@ def aggiungi_proprieta():
                 proprietario = Proprietario(
                     id=current_user.id,
                     id_metodo_accredito=id_metodo_pagamento,
-                    biografia=biografia,
                     telefono=telefono,
                 )
+                if biografia:
+                    proprietario.biografia
                 proprietario.metodo_accredito = metodo_pagamento
                 proprietario.utente = current_user
 
