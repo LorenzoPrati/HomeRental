@@ -736,9 +736,11 @@ def aggiungi_camera():
         ordinale=ordinale,
         prezzo_per_notte=prezzo_per_notte,
         num_ospiti=num_ospiti,
-        descrizione=descrizione_camera,
         proprieta=proprieta,
     )
+    
+    if descrizione_camera:
+        nuova_camera.descrizione = descrizione_camera
 
     db.session.add(nuova_camera)
     db.session.commit()
