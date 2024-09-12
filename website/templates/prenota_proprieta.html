@@ -1,10 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Dettagli proprieta{% endblock %}
+{% block title %}Prenota{% endblock %}
 
 {% block content %}
-<h2 align="center">{{ proprieta.citta.nome }}, {{proprieta.indirizzo}}</h2>
-<h5 align="center">{{ proprieta.tipo_struttura.nome }}</h5>
-
+<div class="row justify-content-center">
+    <h3 class="text-center">{{ proprieta.citta.nome }}, {{proprieta.indirizzo}}</h3>
+</div>
+<div class="row justify-content-center">
+    <h5 class="text-center">{{ proprieta.tipo_struttura.nome }}</h5>
+</div>
 <form method="POST">
     <div class="row justify-content-center">
         {% for amenita in proprieta.amenita %}
@@ -16,7 +19,7 @@
     <div class="row">
         {{proprieta.descrizione}}
     </div>
-    <hr>
+    
     <div class="row">
         <div class="col-9">
             <div class="row">
@@ -59,7 +62,8 @@
                         <div class="card-header">
                             <h5 class="card-title mr-1">{{recensione.utente.nome_utente}}
                                 <i class="bi bi-star-fill"></i>
-                                {{recensione.valutazione}} ({{recensione.get_stringa_data_ultima_modifica()}})</h5>
+                                {{recensione.valutazione}} ({{recensione.get_stringa_data_ultima_modifica()}})
+                            </h5>
                         </div>
                         <div class="card-body">
                             <p>{{recensione.testo}}</p>
@@ -69,65 +73,65 @@
                 {% endfor %}
             </div>
         </div>
+        <div class="col-3">
+            <div class="row justify-content-center">
+                <h4>{{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}
+                </h4>
+            </div>
+            <div class="row justify-content-center">
+                <h5><i class="bi bi-star-fill mr-1"></i>{{proprieta.proprietario.valutazione_media}}
+                    ({{proprieta.proprietario.num_valutazioni}})</h5>
+            </div>
+            <div class="row">
+                <p>{{proprieta.proprietario.biografia}}</p>
+            </div>
 
-    <div class="col-3">
-        <div class="row justify-content-center">
-            <h4>{{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}
-            </h4>
-        </div>
-        <div class="row justify-content-center">
-            <h5><i class="bi bi-star-fill mr-1"></i>{{proprieta.proprietario.valutazione_media}} ({{proprieta.proprietario.num_valutazioni}})</h5>
-        </div>
-        <div class="row">
-            <p>{{proprieta.proprietario.biografia}}</p>
-        </div>
+            <hr>
 
-        <hr>
+            <div class="form-group">
+                <label for="check_in" class="font-weight-bold">Check-in:
+                </label><input type="datetime-local" id="check_in" name="check_in" class="form-control"
+                    value="{{check_in}}" , disabled="true">
+            </div>
+            <div class="form-group">
+                <label for="check_out" class="font-weight-bold">Check-out:</label>
+                <input type="datetime-local" id="check_out" name="check_out" class="form-control" value="{{check_out}}"
+                    , disabled="true">
+            </div>
+            <div class="form-group">
+                <label for="num_ospiti" class="font-weight-bold">Quanti:</label>
+                <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="{{num_ospiti}}"
+                    , disabled="true">
+            </div>
 
-        <div class="form-group">
-            <label for="check_in" class="font-weight-bold">Check-in:
-            </label><input type="datetime-local" id="check_in" name="check_in" class="form-control" value="{{check_in}}"
-                , disabled="true">
-        </div>
-        <div class="form-group">
-            <label for="check_out" class="font-weight-bold">Check-out:</label>
-            <input type="datetime-local" id="check_out" name="check_out" class="form-control" value="{{check_out}}" ,
-                disabled="true">
-        </div>
-        <div class="form-group">
-            <label for="num_ospiti" class="font-weight-bold">Quanti:</label>
-            <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="{{num_ospiti}}" ,
-                disabled="true">
-        </div>
-        
-        <div class="form-group">
-            <select class="form-control" id="id_metodo_pagamento" , name="id_metodo_pagamento">
-                <option selected disabled>Metodo di pagamento</option>
-                {% for metodo_pagamento in user.metodi_pagamento %}
-                <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.get_nome()}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="form-group">
-            <select class="form-control" id="id_coupon" , name="id_coupon">
-                <option selected disabled>Coupon</option>
-                {% for coupon in coupons %}
-                <option value="{{coupon.id}}">
-                    {{coupon.percentuale_sconto}}% -
-                    {% for tipo_struttura in coupon.tipi_struttura%}
-                    {{tipo_struttura.nome}},
+            <div class="form-group">
+                <select class="form-control" id="id_metodo_pagamento" , name="id_metodo_pagamento">
+                    <option selected disabled>Metodo di pagamento</option>
+                    {% for metodo_pagamento in user.metodi_pagamento %}
+                    <option value="{{metodo_pagamento.id}}">{{metodo_pagamento.get_nome()}}</option>
                     {% endfor %}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-        
-        <div class="row justify-content-center">
-            <button type="submit" class="btn btn-primary">Vai al pagamento</button>
-        </div>
+                </select>
+            </div>
 
-    </div>
+            <div class="form-group">
+                <select class="form-control" id="id_coupon" , name="id_coupon">
+                    <option selected disabled>Coupon</option>
+                    {% for coupon in coupons %}
+                    <option value="{{coupon.id}}">
+                        {{coupon.percentuale_sconto}}% -
+                        {% for tipo_struttura in coupon.tipi_struttura%}
+                        {{tipo_struttura.nome}},
+                        {% endfor %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="row justify-content-center">
+                <button type="submit" class="btn btn-primary">Vai al pagamento</button>
+            </div>
+
+        </div>
 
     </div>
 </form>

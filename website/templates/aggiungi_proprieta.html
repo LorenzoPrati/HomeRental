@@ -1,16 +1,16 @@
 {% extends "base.html" %}
-{% block title %}Aggiungi proprieta{% endblock %}
+{% block title %}Aggiungi Proprieta{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <h2 class="text-center">Proprietà</h2>
+    <h3 class="text-center">Proprietà</h3>
 </div>
 <form method="POST">
     {% if not user.proprietario %}
     <div class="form-group">
         <label for="biografia">Biografia:</label>
         <textarea class="form-control" name="biografia" id="biografia"
-            rows="1">Di qualcosa su di te ai tuoi futuri ospiti.</textarea>
+            rows="1">Racconta qualcosa di te.</textarea>
     </div>
     <div class="form-group">
         <label for="telefono">Telefono:</label>

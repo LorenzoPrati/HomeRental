@@ -570,6 +570,7 @@ def soggiorni_tua_proprieta():
         .filter(Camera.id_proprieta == id_proprieta)
         .order_by(Soggiorno.check_in)
         .distinct()
+        .all()
     )
 
     return render_template(

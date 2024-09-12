@@ -3,8 +3,10 @@
 
 {% block content %}
 {% if user.proprietario %}
-<h2 align="center">Le tue proprietà</h2>
-<div class="row">
+<div class="row justify-content-center">
+    <h3 class="text-center">Le tue proprietà</h3>
+</div>
+<div class="row mt-4">
     {% for proprieta in user.proprietario.proprieta %}
     {% if not proprieta.data_rimozione %}
     <div class="col-4 p-2">
@@ -28,11 +30,13 @@
 {% endif %}
 {% endfor %}
 </div>
-<div class="row justify-content-center">
-    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary mt-4">Aggiungi proprieta</a>
+<div class="row mt-4 justify-content-center">
+    <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary">Aggiungi proprieta</a>
 </div>
 {% else %}
-<h2 align="center">{{ user.nome_utente }}, ancora non sei proprietario.</h2>
+<div class="row justify-content-center">
+    <h3 class="text-center">{{ user.nome_utente }}, ancora non sei proprietario.</h3>
+</div>
 {% if user.metodi_pagamento %}
 <div class="row justify-content-center">
     <a href="{{ url_for('views.aggiungi_proprieta') }}" class="btn btn-primary mt-4">Diventa proprietario</a>

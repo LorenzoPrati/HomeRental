@@ -3,10 +3,10 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <h2 align="center">Dove vuoi andare?</h2>
+  <h2 class="text-center">Dove vuoi andare?</h2>
 </div>
 <form method="POST">
-  <div class="row pt-4 justify-content-center">
+  <div class="row mt-4 justify-content-center">
     <div class="col-3">
       <div class="form-group">
         <label for="citta" class="font-weight-bold">Dove: </label>
@@ -20,24 +20,23 @@
     </div>
     <div class="col-3">
       <div class="form-group">
-        <label for="check_in" class="font-weight-bold">Check-In</label>
+        <label for="check_in" class="font-weight-bold">Check-In:</label>
         <input type="datetime-local" id="check_in" name="check_in" class="form-control">
       </div>
     </div>
     <div class="col-3">
       <div class="form-group">
-        <label for="check_out" class="font-weight-bold">Check-Out</label>
+        <label for="check_out" class="font-weight-bold">Check-Out:</label>
         <input type="datetime-local" id="check_out" name="check_out" class="form-control">
       </div>
     </div>
     <div class="col-3">
       <div class="form-group">
-        <label for="num_ospiti" class="font-weight-bold">Quanti</label>
+        <label for="num_ospiti" class="font-weight-bold">Quanti:</label>
         <input type="number" id="num_ospiti" name="num_ospiti" class="form-control" placeholder="1">
       </div>
     </div>
   </div>
-  <hr>
   <div class="row pt-1 justify-content-center">
     <div class="form-group">
       {% for amenita in amenita %}
@@ -64,10 +63,10 @@
     <button type="submit" class="btn btn-primary">Cerca</button>
   </div>
 </form>
-<hr>
 {% if soggiorno %}
+<hr>
 <div class="row justify-content-center"></div>
-  <h2 align="center">Il tuo prossimo viaggio</h2>
+  <h2 class="text-center">Il tuo prossimo viaggio</h2>
 </div>
 <div class="row justify-content-center">
   <div class="card text-center">

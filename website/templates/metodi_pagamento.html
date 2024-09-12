@@ -1,10 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Aggiungi Paypal{% endblock %}
+{% block title %}Metodi Pagamento{% endblock %}
 
 {% block content %}
 {% if user.metodi_pagamento %}
-<h2 align="center">I tuoi metodi di pagamento</h2>
-<div class="row pt-2 justify-content-center">
+<div class="row justify-content-center">
+<h3 class="text-center">I tuoi metodi di pagamento</h3>
+</div>
+<div class="row mt-4 justify-content-center">
     <ul class="list-group">
         {% for metodo_pagamento in user.metodi_pagamento %}
         <li class="list-group-item">{{metodo_pagamento.get_nome()}}
@@ -19,7 +21,7 @@
 </div>
 {% endif %}
 
-<div class="row mt-2 justify-content-center">
+<div class="row mt-4 justify-content-center">
     <a href="{{url_for('views.aggiungi_carta', flag=flag)}}" class="btn btn-primary"><i
         class="bi bi-credit-card-fill mr-1"></i>Aggiungi Carta</a>
 </div>
@@ -32,7 +34,7 @@
 {% if user.proprietario %}
 <form method="post">
     <div class="row mt-4 form-group">
-        <label for="id_metodo_accredito">Modifica metodo accredito host:</label>
+        <label for="id_metodo_accredito">Modifica metodo accredito:</label>
         <select name="id_metodo_accredito" id="id_metodo_accredito" class="form-control">
             <option selected disabled>Seleziona il metodo di accredito</option>
             {% for metodo_pagamento in user.metodi_pagamento %}

@@ -1,16 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Aggiungi Paypal{% endblock %}
+{% block title %}Migliori Host{% endblock %}
 
 {% block content %}
-<h2 align="center">Top 10 host con le valutazioni mediamente più alte</i></h2>
-
-<div class="d-flex flex-row pt-4 justify-content-center">
-<ul class="list-group">
-    {% for proprietario in proprietari %}
-    <li class="list-group-item">{{proprietario.utente.nome}} {{proprietario.utente.cognome}} - 
-        {{proprietario.valutazione_media}} <i class="bi bi-star-fill"></i> ({{proprietario.num_valutazioni}})</li>
-    {% endfor %}
-</ul>
+<div class="row justify-content-center">
+    <h3 class="text-center">Migliori Host</h3>
+</div>
+<div class="row mt-4 justify-content-center">
+    <ul class="list-group">
+        {% for proprietario in proprietari %}
+        <li class="list-group-item">
+            <h4>
+                {{proprietario.utente.nome}} {{proprietario.utente.cognome}} -
+            {{proprietario.valutazione_media}} <i class="bi bi-star-fill"></i> ({{proprietario.num_valutazioni}})
+            </h4>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 
 {% endblock %}

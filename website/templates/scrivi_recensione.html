@@ -1,11 +1,15 @@
 {% extends "base.html" %}
-{% block title %}Scrivi recensione{% endblock %}
+{% block title %}Scrivi Recensione{% endblock %}
 
 {% block content %}
 {% if vecchia_recensione %}
-<h2 align="center">Modifica la tua recensione</i></h2>
+<div class="row justify-content-center">
+  <h3 class="text-center">Modifica la tua recensione</h3>
+</div>
 {% else %}
-<h2 align="center">Scrivi la tua recensione</i></h2>
+<div class="row justify-content-center">
+  <h3 class="text-center">Scrivi la tua recensione</h3>
+</div>
 {% endif %}
 <form method="POST">
   {% if vecchia_recensione %}
@@ -27,7 +31,7 @@
   <div class="form-group">
     <label for="exampleFormControlSelect2">Stelle</label>
     <select class="form-control" id="valutazione" name="valutazione">
-      <option selected disabled>{{vecchia_recensione.valutazione}}</option>
+      <option selected disabled>Inserisci una valutazione da 1 a 5 stelle</option>
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
