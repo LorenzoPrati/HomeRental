@@ -8,6 +8,7 @@
 <div class="row justify-content-center">
     <h5><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}} ({{proprieta.num_valutazioni}})</h5>
 </div>
+{% if proprieta.recensioni %}
 <div class="row mt-4">
     <table class="table table-striped">
         <thead>
@@ -30,5 +31,10 @@
         </tbody>
     </table>
 </div>
+{% else %}
+<div class="row justify-content-center">
+    <h3 class="text-center">Nessuna recensione.</h3>
+</div>
+{% endif %}
 
 {% endblock %}
