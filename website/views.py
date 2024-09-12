@@ -130,6 +130,8 @@ def ricerca():
         id_proprieta_valide = (
             db.session.query(Proprieta.id)
             .filter(
+                Proprieta.data_rimozione.is_(None),
+                Proprieta.id_proprietario != current_user.id,
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura),
                 Proprieta.data_rimozione.is_(None),
@@ -142,10 +144,12 @@ def ricerca():
             db.session.query(Proprieta.id)
             .outerjoin(servizi)
             .filter(
-                servizi.c.id_amenita.in_(amenita),
+                Proprieta.data_rimozione.is_(None),
+                Proprieta.id_proprietario != current_user.id,
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura),
                 Proprieta.data_rimozione.is_(None),
+                servizi.c.id_amenita.in_(amenita),
             )
             .group_by(Proprieta.id)
             .having(func.count() == len(amenita))
@@ -155,14 +159,15 @@ def ricerca():
 
     id_camere_occupate = (
         db.session.query(Camera.id)
-        .outerjoin(occupazioni)
-        .outerjoin(Soggiorno)
+        .join(occupazioni)
+        .join(Soggiorno)
         .filter(
             or_(
                 Camera.data_rimozione.isnot(None),
                 and_(
                     check_in <= Soggiorno.check_out,
                     check_out >= Soggiorno.check_in,
+                    Soggiorno.data_cancellazione.is_(None),
                 ),
             )
         )
@@ -273,21 +278,26 @@ def prenota_proprieta():
                 "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere e/o metodo di pagamento) e/o camere non più libere.",
                 category="error",
             )
-    
+
     id_camere_occupate = (
         db.session.query(Camera.id)
-        .outerjoin(occupazioni)
-        .outerjoin(Soggiorno)
+        .join(occupazioni)
+        .join(Soggiorno)
         .filter(
-            Proprieta.id == id_proprieta,
-            check_in <= Soggiorno.check_out,
-            check_out >= Soggiorno.check_in,
+            Camera.id_proprieta == id_proprieta,
+            or_(
+                Camera.data_rimozione.isnot(None),
+                and_(
+                    check_in <= Soggiorno.check_out,
+                    check_out >= Soggiorno.check_in,
+                    Soggiorno.data_cancellazione.is_(None),
+                ),
+            )
         )
         .distinct()
-        .all()
     )
-    
-    camere = db.session.query(Camera).filter(Camera.id.notin_(id_camere_occupate))
+
+    camere_libere = db.session.query(Camera).filter(Camera.id_proprieta==id_proprieta, Camera.id.notin_(id_camere_occupate))
 
     coupons = (
         db.session.query(Coupon)
@@ -309,7 +319,7 @@ def prenota_proprieta():
         check_out=check_out,
         num_ospiti=num_ospiti,
         proprieta=proprieta,
-        camere=camere,
+        camere_libere=camere_libere,
         coupons=coupons,
     )
 
