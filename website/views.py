@@ -610,8 +610,10 @@ def aggiungi_proprieta():
                 indirizzo=indirizzo,
                 id_citta=id_citta,
                 id_tipo_struttura=id_tipo_struttura,
-                descrizione=descrizione,
             )
+
+            if descrizione:
+                proprieta.descrizione = descrizione
 
             if not current_user.proprietario:
                 id_metodo_pagamento = request.form.get("metodo_pagamento")
@@ -630,7 +632,7 @@ def aggiungi_proprieta():
 
                 db.session.add(proprietario)
 
-                flash("Congratulazioni. Ora sei proprietario.", category="success")
+                flash("Profilo host creato.", category="success")
 
             proprieta.id_proprietario = current_user.proprietario.id
             proprieta.proprietario = current_user.proprietario
@@ -716,6 +718,7 @@ def aggiungi_camera():
     id_proprieta = obj["id_proprieta"]
     prezzo_per_notte = int(obj["prezzo_per_notte"])
     num_ospiti = int(obj["num_ospiti"])
+    descrizione_camera = obj["descrizione_camera"]
     proprieta = Proprieta.query.get(id_proprieta)
 
     camere = [
@@ -732,6 +735,7 @@ def aggiungi_camera():
         ordinale=ordinale,
         prezzo_per_notte=prezzo_per_notte,
         num_ospiti=num_ospiti,
+        descrizione=descrizione_camera,
         proprieta=proprieta,
     )
 
@@ -825,9 +829,9 @@ def annulla_soggiorno():
 @views.route("/migliori_host", methods=["GET", "POST"])
 @login_required
 def migliori_host():
-    valutazione_media_globale = (
-        db.session.query(func.avg(Proprietario.valutazione_media)).subquery()
-    )
+    valutazione_media_globale = db.session.query(
+        func.avg(Proprietario.valutazione_media)
+    ).subquery()
 
     proprietari = (
         db.session.query(Proprietario)
@@ -883,6 +887,7 @@ def migliori_citta():
             Proprieta.id_citta.label("id_citta"),
             func.avg(Proprieta.valutazione_media).label("valutazione_media"),
         )
+        .filter(Proprieta.data_rimozione.is_(None), Proprieta.num_valutazioni > 0)
         .group_by(Proprieta.id_citta)
         .limit(5)
     )

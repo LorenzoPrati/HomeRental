@@ -157,6 +157,7 @@ class Camera(db.Model):
     prezzo_per_notte: Mapped[int] = mapped_column()
     id_proprieta: Mapped[int] = mapped_column(ForeignKey("proprieta.id"))
     data_rimozione: Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    descrizione: Mapped[str] = mapped_column(String(500), nullable=True)
 
     proprieta: Mapped["Proprieta"] = relationship(back_populates="camere")
     soggiorni: Mapped[Optional[List["Soggiorno"]]] = relationship(

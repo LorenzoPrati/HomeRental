@@ -17,7 +17,11 @@
         {% endfor %}
     </div>
     <div class="row">
-        Descrizione: {{proprieta.descrizione}}
+        {% if proprieta.descrione %}
+        <p>Descrizione: {{proprieta.descrizione}}</p>
+        {% else %}
+        <p>Nessuna descrizione.</p>
+        {% endif %}
     </div>
 
     <div class="row mt-2">
@@ -26,17 +30,19 @@
                 <div class="row justify-content-center">
                     {% for camera in camere %}
                     <div class="card-deck p-1">
-                        <div class="card">
+                        <div class="card" style="width: 15rem;">
                             <div class="card-header">
                                 <h5 class="card-title">Camera {{ camera.ordinale }}</h5>
                             </div>
                             <div class="card-body">
-                                <h5>
-                                    <i class="bi bi-person-fill mr-1"></i>{{camera.num_ospiti}}
-                                </h5>
-                                <h5>
-                                    <i class="bi bi-currency-euro mr-1"></i>{{camera.prezzo_per_notte}}
-                                </h5>
+                                <i class="bi bi-person-fill mr-1"></i>{{camera.num_ospiti}}
+                                <i class="bi bi-currency-euro mr-1"></i>{{camera.prezzo_per_notte}}
+                                <hr>
+                                {% if camera.descrizione %}
+                                <p>{{camera.descrizione}}</p>
+                                {% else %}
+                                <p>Nessuna descrizione.</p>
+                                {% endif %}
                                 <div class="form-check">
                                     <input class="form-check-input btn" type="checkbox" value="{{camera.id}}"
                                         id="{{camera.id}}" name="camere_prenotate">
@@ -50,14 +56,14 @@
             </div>
             <hr>
             <div class="row justify-content-center">
-                <h5 class="card-title">Valutazione media: <i
+                <h5 class="text-center">Valutazione media: <i
                         class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
                     ({{proprieta.num_valutazioni}})</h5>
                 <br>
             </div>
             <div class="row">
                 {% for recensione in proprieta.recensioni %}
-                <div class="card-deck p-1">
+                <div class="card-deck p-1" style="width: 15rem;">
                     <div class="card">
                         <div class="card-header">
                             <h6 class="card-title mr-1">{{recensione.utente.nome_utente}}
@@ -83,7 +89,11 @@
                     ({{proprieta.proprietario.num_valutazioni}})</h5>
             </div>
             <div class="row justify-content-center">
+                {% if proprieta.proprietario.biografia %}
                 <p>{{proprieta.proprietario.biografia}}</p>
+                {% else %}
+                <p>Nessuna biografia.</p>
+                {% endif %}
             </div>
             <div class="form-group">
                 <label for="check_in" class="font-weight-bold">Check-in:
