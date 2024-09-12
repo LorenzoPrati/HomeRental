@@ -30,7 +30,7 @@ from .models import (
     spendibilita_coupons,
 )
 from . import db
-from sqlalchemy import func, or_, select
+from sqlalchemy import and_, func, or_, select
 import datetime
 
 views = Blueprint("views", __name__)
@@ -127,100 +127,60 @@ def ricerca():
         tipi_struttura = [t.nome for t in db.session.query(Tipo_Struttura).all()]
 
     if not amenita:
-        proprieta_valide = (
-            select(
-                Proprieta.id.label("id"),
-                Proprieta.id_citta.label("id_citta"),
-                Proprieta.indirizzo.label("indirizzo"),
-                Proprieta.id_tipo_struttura.label("id_tipo_struttura"),
-                Proprieta.valutazione_media.label("valutazione_media"),
-                Proprieta.num_valutazioni.label("num_valutazioni"),
-                Utente.nome.label("nome"),
-                Utente.cognome.label("cognome"),
-            )
-            .select_from(Proprieta)
-            .join(Proprietario)
-            .join(Utente)
-            .where(
-                Proprieta.id_proprietario != current_user.id,
-                Proprieta.data_rimozione.is_(None),
+        id_proprieta_valide = (
+            db.session.query(Proprieta.id)
+            .filter(
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura),
+                Proprieta.data_rimozione.is_(None),
             )
-            .cte("proprieta_valide")
+            .distinct()
+            .cte("id_proprieta_valide_senza_amenita")
         )
     else:
-        proprieta_valide = (
-            select(
-                Proprieta.id.label("id"),
-                Proprieta.id_citta.label("id_citta"),
-                Proprieta.indirizzo.label("indirizzo"),
-                Proprieta.id_tipo_struttura.label("id_tipo_struttura"),
-                Proprieta.valutazione_media.label("valutazione_media"),
-                Proprieta.num_valutazioni.label("num_valutazioni"),
-                Utente.nome.label("nome"),
-                Utente.cognome.label("cognome"),
-            )
-            .select_from(Proprieta)
-            .join(Proprietario)
-            .join(Utente)
-            .join(servizi)  # outer ?
-            .where(
-                Proprieta.id_proprietario != current_user.id,
-                Proprieta.data_rimozione.is_(None),
+        id_proprieta_valide = (
+            db.session.query(Proprieta.id)
+            .outerjoin(servizi)
+            .filter(
+                servizi.c.id_amenita.in_(amenita),
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura),
-                servizi.c.id_amenita.in_(amenita),
+                Proprieta.data_rimozione.is_(None),
             )
             .group_by(Proprieta.id)
-            .having(
-                func.count() == len(amenita)
-            )  # func.count(distinct servizi.c.id_amenita)
+            .having(func.count() == len(amenita))
             .distinct()
-            .cte("proprieta_valide")
+            .cte("id_proprieta_valide_con_amenita")
         )
 
-    # res = db.session.execute(proprieta_valide).fetchall()
-
-    camere_libere = (
-        select(
-            Camera.id.distinct(),
-            Camera.num_ospiti.label("num_ospiti"),
-            proprieta_valide,
-        )
-        .select_from(proprieta_valide)
-        .join(Camera, proprieta_valide.c.id == Camera.id_proprieta)  # on clause ?
+    id_camere_occupate = (
+        db.session.query(Camera.id)
         .outerjoin(occupazioni)
         .outerjoin(Soggiorno)
         .filter(
-            Camera.data_rimozione.is_(None),
             or_(
-                Soggiorno.id.is_(None),
-                Soggiorno.data_cancellazione.isnot(None),  # is ?
-                check_in > Soggiorno.check_out,
-                check_out < Soggiorno.check_in,
-            ),
+                Camera.data_rimozione.isnot(None),
+                and_(
+                    check_in <= Soggiorno.check_out,
+                    check_out >= Soggiorno.check_in,
+                ),
+            )
         )
-        .cte("camere_libere")
+        .distinct()
+        .cte("id_camere_occupate")
     )
 
     lista_proprieta = (
-        select(
-            camere_libere.c.id,
-            camere_libere.c.id_citta.label("id_citta"),
-            camere_libere.c.indirizzo.label("indirizzo"),
-            camere_libere.c.id_tipo_struttura.label("id_tipo_struttura"),
-            camere_libere.c.nome.label("nome"),
-            camere_libere.c.cognome.label("cognome"),
-            camere_libere.c.valutazione_media.label("valutaione_media"),
-            camere_libere.c.num_valutazioni.label("num_valutazioni"),
+        db.session.query(Proprieta)
+        .join(Camera)
+        .filter(
+            Camera.id.not_in(select(id_camere_occupate)),
+            Proprieta.id.in_(select(id_proprieta_valide)),
         )
-        .select_from(camere_libere)
-        .group_by(camere_libere.c.id)
-        .having(func.sum(camere_libere.c.num_ospiti) >= num_ospiti)
+        .group_by(Proprieta.id)
+        .having(func.sum(Camera.num_ospiti) >= num_ospiti)
+        .all()
     )
-
-    lista_proprieta = db.session.execute(lista_proprieta).fetchall()
 
     return render_template(
         "ricerca.html",
@@ -261,23 +221,6 @@ def prenota_proprieta():
     num_ospiti = request.args.get("num_ospiti")
     id_proprieta = request.args.get("id_proprieta")
     proprieta = Proprieta.query.get(id_proprieta)
-
-    camere = (
-        db.session.query(Camera)
-        .outerjoin(occupazioni)
-        .outerjoin(Soggiorno)
-        .filter(
-            Camera.data_rimozione.is_(None),
-            Camera.id_proprieta == proprieta.id,
-            or_(
-                Soggiorno.id.is_(None),
-                Soggiorno.data_cancellazione.isnot(None),
-                check_in > Soggiorno.check_out,
-                check_out < Soggiorno.check_in,
-            ),
-        )
-        .distinct()
-    )
 
     if request.method == "POST":
         id_camere = request.form.getlist("camere_prenotate")
@@ -330,6 +273,21 @@ def prenota_proprieta():
                 "Errore: mancano informazioni necessarie per effettuare la prenotazione (camere e/o metodo di pagamento) e/o camere non più libere.",
                 category="error",
             )
+    
+    id_camere_occupate = (
+        db.session.query(Camera.id)
+        .outerjoin(occupazioni)
+        .outerjoin(Soggiorno)
+        .filter(
+            Proprieta.id == id_proprieta,
+            check_in <= Soggiorno.check_out,
+            check_out >= Soggiorno.check_in,
+        )
+        .distinct()
+        .all()
+    )
+    
+    camere = db.session.query(Camera).filter(Camera.id.notin_(id_camere_occupate))
 
     coupons = (
         db.session.query(Coupon)
@@ -738,7 +696,7 @@ def aggiungi_camera():
         num_ospiti=num_ospiti,
         proprieta=proprieta,
     )
-    
+
     if descrizione_camera:
         nuova_camera.descrizione = descrizione_camera
 
@@ -870,7 +828,7 @@ def citta_popolari():
         .outerjoin(Proprieta.camere)
         .outerjoin(Camera.soggiorni)
         .filter(
-            #Soggiorno.data_cancellazione.is_(None),
+            # Soggiorno.data_cancellazione.is_(None),
             Soggiorno.check_in >= start_date,
             Soggiorno.check_out <= end_date,
         )

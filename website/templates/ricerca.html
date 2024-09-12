@@ -14,7 +14,7 @@
             <div class="card-header">{{proprieta.id_tipo_struttura}}</div>
             <div class="card-body">
                 <h5 class="card-title">{{ proprieta.id_citta }}, {{ proprieta.indirizzo }}</h5>
-                <p>di {{proprieta.nome}} {{proprieta.cognome}}</p>
+                <p>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</p>
                 <p><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
                     ({{proprieta.num_valutazioni}})</p>
                 <p></p>
