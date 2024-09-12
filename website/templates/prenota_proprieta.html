@@ -17,10 +17,10 @@
         {% endfor %}
     </div>
     <div class="row">
-        {{proprieta.descrizione}}
+        Descrizione: {{proprieta.descrizione}}
     </div>
-    
-    <div class="row">
+
+    <div class="row mt-2">
         <div class="col-9">
             <div class="row">
                 <div class="row justify-content-center">
@@ -32,11 +32,10 @@
                             </div>
                             <div class="card-body">
                                 <h5>
-                                    <i class="bi bi-person-fill"></i>
-                                    {{camera.num_ospiti}}
+                                    <i class="bi bi-person-fill mr-1"></i>{{camera.num_ospiti}}
                                 </h5>
                                 <h5>
-                                    {{camera.prezzo_per_notte}}<i class="bi bi-currency-euro"></i>notte
+                                    <i class="bi bi-currency-euro mr-1"></i>{{camera.prezzo_per_notte}}
                                 </h5>
                                 <div class="form-check">
                                     <input class="form-check-input btn" type="checkbox" value="{{camera.id}}"
@@ -51,7 +50,8 @@
             </div>
             <hr>
             <div class="row justify-content-center">
-                <h5 class="card-title"><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
+                <h5 class="card-title">Valutazione media: <i
+                        class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
                     ({{proprieta.num_valutazioni}})</h5>
                 <br>
             </div>
@@ -60,10 +60,10 @@
                 <div class="card-deck p-1">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="card-title mr-1">{{recensione.utente.nome_utente}}
+                            <h6 class="card-title mr-1">{{recensione.utente.nome_utente}}
                                 <i class="bi bi-star-fill"></i>
                                 {{recensione.valutazione}} ({{recensione.get_stringa_data_ultima_modifica()}})
-                            </h5>
+                            </h6>
                         </div>
                         <div class="card-body">
                             <p>{{recensione.testo}}</p>
@@ -82,12 +82,9 @@
                 <h5><i class="bi bi-star-fill mr-1"></i>{{proprieta.proprietario.valutazione_media}}
                     ({{proprieta.proprietario.num_valutazioni}})</h5>
             </div>
-            <div class="row">
+            <div class="row justify-content-center">
                 <p>{{proprieta.proprietario.biografia}}</p>
             </div>
-
-            <hr>
-
             <div class="form-group">
                 <label for="check_in" class="font-weight-bold">Check-in:
                 </label><input type="datetime-local" id="check_in" name="check_in" class="form-control"
@@ -128,7 +125,7 @@
             </div>
 
             <div class="row justify-content-center">
-                <button type="submit" class="btn btn-primary">Vai al pagamento</button>
+                <button type="submit" class="btn btn-primary">Prenota</button>
             </div>
 
         </div>
