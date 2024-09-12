@@ -824,9 +824,9 @@ def annulla_soggiorno():
 @views.route("/migliori_host", methods=["GET", "POST"])
 @login_required
 def migliori_host():
-    valutazione_media_globale = db.session.query(
-        func.avg(Proprietario.valutazione_media)
-    ).subquery()
+    valutazione_media_globale = (
+        db.session.query(func.avg(Proprietario.valutazione_media)).subquery()
+    )
 
     proprietari = (
         db.session.query(Proprietario)
@@ -874,33 +874,19 @@ def citta_popolari():
     return render_template("citta_popolari.html", user=current_user, citta=citta)
 
 
-@views.route("/migliori_proprieta", methods=["GET", "POST"])
+@views.route("/migliori_citta", methods=["GET", "POST"])
 @login_required
-def migliori_proprieta():
-    valutazione_media_globale = db.session.query(
-        func.avg(Proprieta.valutazione_media)
-    ).subquery()
-
-    proprieta = (
-        db.session.query(Proprieta)
-        .join(Proprietario)
-        .filter(Proprieta.data_rimozione.is_(None))
-        .order_by(
-            (
-                (Proprieta.valutazione_media * Proprietario.num_valutazioni)
-                / (Proprieta.num_valutazioni + 10)
-            )
-            + (
-                (10 * valutazione_media_globale.as_scalar())
-                / (Proprieta.num_valutazioni + 10)
-            ).desc()
+def migliori_citta():
+    citta = (
+        db.session.query(
+            Proprieta.id_citta.label("id_citta"),
+            func.avg(Proprieta.valutazione_media).label("valutazione_media"),
         )
-        .limit(10)
+        .group_by(Proprieta.id_citta)
+        .limit(5)
     )
 
-    return render_template(
-        "migliori_proprieta.html", user=current_user, proprieta=proprieta
-    )
+    return render_template("migliori_citta.html", user=current_user, citta=citta)
 
 
 @views.route("/amenita_apprezzate", methods=["GET", "POST"])
@@ -916,6 +902,7 @@ def amenita_apprezzate():
         )
         .group_by(Amenita.nome)
         .order_by(func.count().desc())
+        .limit(5)
     )
 
     return render_template(

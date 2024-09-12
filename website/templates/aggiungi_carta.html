@@ -2,26 +2,28 @@
 {% block title %}Aggiungi Carta{% endblock %}
 
 {% block content %}
+<div class="row justify-content-center">
+    <h3 class="text-center">Carta di credito</h3>
+</div>
 <form method="POST">
-    <h3 align="center">Dettagli carta:</h3>
-        <div class="form-group">
-            <label for="numero_carta">Numero carta:</label>
-            <input type="text" class="form-control" id="numero_carta" name="numero_carta">
-        </div>
-        <div class="form-group">
-            <label for="nome">Nome:</label>
-            <input type="text" class="form-control" id="nome" name="nome">
-        </div>
-        <div class="form-group">
-            <label for="cognome">Cognome:</label>
-            <input type="text" class="form-control" id="cognome" name="cognome">
-        </div>
-        <div class="form-group">
-            <label for="data_scadenza">Data scadenza:</label>
-            <input type="date" class="form-control" id="data_scadenza" name="data_scadenza">
-        </div>
-        <div class="row justify-content-center">
-            <button type="submit" class="btn btn-primary">Salva</button>
-        </div>
+    <div class="form-group">
+        <label for="numero_carta">Numero carta:</label>
+        <input type="text" class="form-control" id="numero_carta" name="numero_carta">
+    </div>
+    <div class="form-group">
+        <label for="nome">Nome:</label>
+        <input type="text" class="form-control" id="nome" name="nome">
+    </div>
+    <div class="form-group">
+        <label for="cognome">Cognome:</label>
+        <input type="text" class="form-control" id="cognome" name="cognome">
+    </div>
+    <div class="form-group">
+        <label for="data_scadenza">Data scadenza:</label>
+        <input type="date" class="form-control" id="data_scadenza" name="data_scadenza">
+    </div>
+    <div class="row justify-content-center">
+        <button type="submit" class="btn btn-primary">Salva</button>
+    </div>
 </form>
 {% endblock %}

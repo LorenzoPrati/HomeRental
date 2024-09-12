@@ -1,15 +1,18 @@
 {% extends "base.html" %}
-{% block title %}Amenità più apprezzate{% endblock %}
+{% block title %}Amenità apprezzate{% endblock %}
 
 {% block content %}
-<h2 align="center">Amenità più apprezzate</i></h2>
-
-<div class="d-flex flex-row pt-4 justify-content-center">
-<ul class="list-group">
-    {% for amenita in amenita %}
-    <li class="list-group-item"><h5>{{amenita.nome}}</h5></li>
-    {% endfor %}
-</ul>
+<div class="row justify-content-center">
+    <h3 class="text-center">Amenità apprezzate</h3>
+</div>
+<div class="row mt-4 justify-content-center">
+    <ul class="list-group">
+        {% for amenita in amenita %}
+        <li class="list-group-item">
+            <h3 class="text-center">{{amenita.nome}}</h3>
+        </li>
+        {% endfor %}
+    </ul>
 </div>
 
 {% endblock %}

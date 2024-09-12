@@ -2,7 +2,9 @@
 {% block title %}Aggiungi proprieta{% endblock %}
 
 {% block content %}
-<h2 align="center">Inserisci i dati della tua proprieta.</h2>
+<div class="row justify-content-center">
+    <h2 class="text-center">Proprietà</h2>
+</div>
 <form method="POST">
     {% if not user.proprietario %}
     <div class="form-group">
@@ -23,7 +25,7 @@
     <hr>
     {% endif %}
     <div class="form-group">
-        <label for="citta">Citta</label>
+        <label for="citta">Città:</label>
         <select class="form-control" id="citta" name="citta">
             {% for citta in citta %}
             <option value="{{citta.nome}}">{{citta.nome}}</option>
@@ -31,16 +33,16 @@
         </select>
     </div>
     <div class="form-group">
-        <label for="indirizzo">Indirizzo</label>
+        <label for="indirizzo">Indirizzo:</label>
         <input type="text" class="form-control" id="indirizzo" name="indirizzo" placeholder="Via Rossi 35">
     </div>
     <div class="form-group">
-        <label for="descrizione">Descrizione</label>
+        <label for="descrizione">Descrizione:</label>
         <textarea type="text" class="form-control" id="descrizione" name="descrizione"
             placeholder="Scrivi qualcosa sulla tua proprieta." rows="5"></textarea>
     </div>
     <div class="form-group">
-        <label for="tipo_struttura">Tipo Struttura</label>
+        <label for="tipo_struttura">Tipo Struttura:</label>
         <select class="form-control" id="tipo_struttura" name="tipo_struttura">
             {% for tipo_struttura in tipi_struttura %}
             <option value="{{tipo_struttura.nome}}">{{tipo_struttura.nome}}</option>
@@ -50,7 +52,6 @@
     <div class="row justify-content-center">
         <button type="submit" class="btn btn-primary">Salva</button>
     </div>
-    
 </form>
 
 {% endblock %}
