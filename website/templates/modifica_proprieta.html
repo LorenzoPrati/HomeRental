@@ -50,10 +50,14 @@
 	</div>
 </div>
 <form method="POST">
-	<label for="descrizione">Descrizione:</label>
 	<div class="form-group">
+		<label for="descrizione">Descrizione:</label>
+		{% if proprieta.descrizione %}
 		<textarea type="text" class="form-control" id="descrizione" name="descrizione"
 			placeholder="{{ proprieta.descrizione }}" rows="3"></textarea>
+		{% else %}
+		<textarea type="text" class="form-control" id="descrizione" name="descrizione" rows="3"></textarea>
+		{% endif %}
 	</div>
 	<div class="row justify-content-center">
 		<button type="submit" class="btn btn-primary">Salva</button>

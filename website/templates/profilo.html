@@ -47,8 +47,12 @@
 <form method="POST">
     <div class="form-group">
         <label for="biografia">Biografia:</label>
+        {% if user.proprietario.biografia %}
         <textarea class="form-control" name="biografia" id="biografia" rows="5"
             placeholder="{{user.proprietario.biografia}}"></textarea>
+        {% else %}
+        <textarea class="form-control" name="biografia" id="biografia" rows="5"></textarea>
+        {% endif %}
     </div>
     <div class="form-group">
         <label for="telefono">Telefono:</label>
