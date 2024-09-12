@@ -868,7 +868,7 @@ def citta_popolari():
         .outerjoin(Proprieta.camere)
         .outerjoin(Camera.soggiorni)
         .filter(
-            Soggiorno.data_cancellazione.is_(None),
+            #Soggiorno.data_cancellazione.is_(None),
             Soggiorno.check_in >= start_date,
             Soggiorno.check_out <= end_date,
         )
@@ -888,7 +888,7 @@ def migliori_citta():
             Proprieta.id_citta.label("id_citta"),
             func.avg(Proprieta.valutazione_media).label("valutazione_media"),
         )
-        .filter(Proprieta.data_rimozione.is_(None), Proprieta.num_valutazioni > 0)
+        .filter(Proprieta.data_rimozione.is_(None))
         .group_by(Proprieta.id_citta)
         .limit(5)
     )
@@ -904,8 +904,8 @@ def amenita_apprezzate():
         .join(Amenita.proprieta)
         .filter(
             Proprieta.data_rimozione.is_(None),
-            Proprieta.valutazione_media >= 2,
-            Proprieta.num_valutazioni >= 1,
+            Proprieta.valutazione_media >= 4.5,
+            Proprieta.num_valutazioni >= 3,
         )
         .group_by(Amenita.nome)
         .order_by(func.count().desc())
