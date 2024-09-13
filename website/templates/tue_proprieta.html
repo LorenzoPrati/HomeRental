@@ -10,7 +10,7 @@
     {% for proprieta in user.proprietario.proprieta %}
     {% if not proprieta.data_rimozione %}
     <div class="col-4 p-2">
-        <div class="card" style="width: 18rem;">
+        <div class="card h-100">
         <div class="card-header">{{proprieta.id_tipo_struttura}}</div>
         <div class="card-body">
             <h5 class="card-title">{{ proprieta.citta.nome }}, {{ proprieta.indirizzo }}</h5>

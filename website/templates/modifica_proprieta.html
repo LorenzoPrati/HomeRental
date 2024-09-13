@@ -67,22 +67,24 @@
 <div class="row justify-content-center">
 	{% for camera in proprieta.camere %}
 	{% if camera.data_rimozione == None %}
-	<div class="card m-2" style="width: 18rem;">
-		<div class="card-header">
-			<h5>Camera {{ camera.ordinale }}</h5>
-		</div>
-		<div class="card-body">
-			<i class="bi bi-person-fill mr-1"></i>{{camera.num_ospiti}}
-			<i class="bi bi-currency-euro"></i>{{camera.prezzo_per_notte}}
-			<hr>
-			{% if camera.descrizione %}
-			<p>{{camera.descrizione}}</p>
-			{% else %}
-			Nessuna descrizione.
-			{% endif %}
-		</div>
-		<div class="card-footer">
-			<button class="btn btn-danger" onclick="rimuovi_camera({{camera.id}})">Elimina</button>
+	<div class="col-3 p-2">
+		<div class="card h-100">
+			<div class="card-header">
+				<h5>Camera {{ camera.ordinale }}</h5>
+			</div>
+			<div class="card-body">
+				<i class="bi bi-person-fill mr-1"></i>{{camera.num_ospiti}}
+				<i class="bi bi-currency-euro"></i>{{camera.prezzo_per_notte}}
+				<hr>
+				{% if camera.descrizione %}
+				<p>{{camera.descrizione}}</p>
+				{% else %}
+				Nessuna descrizione.
+				{% endif %}
+			</div>
+			<div class="card-footer">
+				<button class="btn btn-danger" onclick="rimuovi_camera({{camera.id}})">Elimina</button>
+			</div>
 		</div>
 	</div>
 	{% endif %}

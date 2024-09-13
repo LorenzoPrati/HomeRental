@@ -9,20 +9,19 @@
 </div>
 <div class="row mt-4">
     {% for proprieta in proprieta %}
-    <div class="col-3">
-        <div class="card" style="width: 18rem;">
+    <div class="col-4 p-2">
+        <div class="card h-100">
             <div class="card-header">{{proprieta.id_tipo_struttura}}</div>
             <div class="card-body">
                 <h5 class="card-title">{{ proprieta.id_citta }}, {{ proprieta.indirizzo }}</h5>
                 <p>di {{proprieta.proprietario.utente.nome}} {{proprieta.proprietario.utente.cognome}}</p>
                 <p><i class="bi bi-star-fill mr-1"></i>{{proprieta.valutazione_media}}
                     ({{proprieta.num_valutazioni}})</p>
-                <p></p>
-                <div class="card-body">
-                    <a
-                        href="{{ url_for('views.prenota_proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, id_proprieta=proprieta.id) }}">Scopri
-                        i dettagli</a>
-                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('views.prenota_proprieta', citta=citta, check_in=check_in, check_out=check_out, num_ospiti=num_ospiti, id_proprieta=proprieta.id) }}"
+                    class="btn btn-primary">Scopri
+                    i dettagli</a>
             </div>
         </div>
     </div>
