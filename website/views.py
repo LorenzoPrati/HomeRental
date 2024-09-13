@@ -339,7 +339,6 @@ def scrivi_recensione():
 
         if testo and valutazione:
             if vecchia_recensione:
-                vecchia_valutazione_media = proprieta.valutazione_media
 
                 proprieta.valutazione_media = (
                     proprieta.valutazione_media * proprieta.num_valutazioni
@@ -350,8 +349,8 @@ def scrivi_recensione():
                 proprietario = proprieta.proprietario
                 proprietario.valutazione_media = (
                     proprietario.valutazione_media * proprietario.num_valutazioni
-                    - vecchia_valutazione_media
-                    + proprieta.valutazione_media
+                    - vecchia_recensione.valutazione
+                    + int(valutazione)
                 ) / proprietario.num_valutazioni
 
                 vecchia_recensione.testo = testo
@@ -380,8 +379,8 @@ def scrivi_recensione():
 
                 proprietario = proprieta.proprietario
                 proprietario.valutazione_media = (
-                    proprietario.valutazione_media * proprietario.num_valutazioni
-                    + proprieta.valutazione_media
+                    (proprietario.valutazione_media * proprietario.num_valutazioni)
+                    + int(valutazione)
                 ) / (proprietario.num_valutazioni + 1)
                 proprietario.num_valutazioni += 1
 
