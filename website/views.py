@@ -839,8 +839,9 @@ def citta_popolari():
             Proprieta.id_citta.label("citta"),
             func.count(func.distinct(Soggiorno.id)).label("numero_soggiorni"),
         )
-        .outerjoin(Proprieta.camere)
-        .outerjoin(Camera.soggiorni)
+        .outerjoin(Camera)
+        .join(occupazioni)
+        .join(Soggiorno)
         .filter(
             Soggiorno.data_cancellazione.is_(None),
             Soggiorno.check_in >= start_date,
