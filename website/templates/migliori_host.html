@@ -10,8 +10,7 @@
         {% for proprietario in proprietari %}
         <li class="list-group-item">
             <h4>
-                {{proprietario.utente.nome}} {{proprietario.utente.cognome}} -
-            {{proprietario.valutazione_media}} <i class="bi bi-star-fill"></i> ({{proprietario.num_valutazioni}})
+                {{proprietario.utente.nome}} {{proprietario.utente.cognome}} <i class="bi bi-star-fill"></i> {{proprietario.valutazione_media}} ({{proprietario.num_valutazioni}})
             </h4>
         </li>
         {% endfor %}
