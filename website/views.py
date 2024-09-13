@@ -292,12 +292,14 @@ def prenota_proprieta():
                     check_out >= Soggiorno.check_in,
                     Soggiorno.data_cancellazione.is_(None),
                 ),
-            )
+            ),
         )
         .distinct()
     )
 
-    camere_libere = db.session.query(Camera).filter(Camera.id_proprieta==id_proprieta, Camera.id.notin_(id_camere_occupate))
+    camere_libere = db.session.query(Camera).filter(
+        Camera.id_proprieta == id_proprieta, Camera.id.notin_(id_camere_occupate)
+    )
 
     coupons = (
         db.session.query(Coupon)
@@ -387,6 +389,8 @@ def scrivi_recensione():
                 db.session.commit()
 
                 flash("Recensione pubblicata.", category="success")
+
+            return redirect(url_for("views.tuoi_soggiorni"))
         else:
             flash("Errore: mancano valutazione e/o testo.", category="error")
 
@@ -838,7 +842,7 @@ def citta_popolari():
         .outerjoin(Proprieta.camere)
         .outerjoin(Camera.soggiorni)
         .filter(
-            # Soggiorno.data_cancellazione.is_(None),
+            Soggiorno.data_cancellazione.is_(None),
             Soggiorno.check_in >= start_date,
             Soggiorno.check_out <= end_date,
         )
@@ -853,15 +857,39 @@ def citta_popolari():
 @views.route("/migliori_citta", methods=["GET", "POST"])
 @login_required
 def migliori_citta():
-    citta = (
-        db.session.query(
+    medie_citta = (
+        select(
             Proprieta.id_citta.label("id_citta"),
-            func.avg(Proprieta.valutazione_media).label("valutazione_media"),
+            func.avg(Proprieta.valutazione_media).label("media_citta"),
+            func.sum(Proprieta.num_valutazioni).label("num_valutazioni"),
         )
-        .filter(Proprieta.data_rimozione.is_(None))
+        .where(Proprieta.data_rimozione.is_(None))
+        .select_from(Proprieta)
         .group_by(Proprieta.id_citta)
+        .cte("medie_citta")
+    )
+
+    media_globale_citta = select(func.avg(medie_citta.c.media_citta)).select_from(
+        medie_citta
+    )
+
+    citta = (
+        select(medie_citta)
+        .select_from(medie_citta)
+        .order_by(
+            (
+                (medie_citta.c.media_citta * medie_citta.c.num_valutazioni)
+                / (medie_citta.c.num_valutazioni + 10)
+            )
+            + (
+                (10 * media_globale_citta.as_scalar())
+                / (medie_citta.c.num_valutazioni + 10)
+            ).desc()
+        )
         .limit(5)
     )
+
+    citta = db.session.execute(citta).all()
 
     return render_template("migliori_citta.html", user=current_user, citta=citta)
 
@@ -875,7 +903,7 @@ def amenita_apprezzate():
         .filter(
             Proprieta.data_rimozione.is_(None),
             Proprieta.valutazione_media >= 4.5,
-            Proprieta.num_valutazioni >= 3,
+            Proprieta.num_valutazioni >= 1,
         )
         .group_by(Amenita.nome)
         .order_by(func.count().desc())
