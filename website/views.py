@@ -159,8 +159,8 @@ def ricerca():
 
     id_camere_occupate = (
         db.session.query(Camera.id)
-        .join(occupazioni)
-        .join(Soggiorno)
+        .outerjoin(occupazioni)
+        .outerjoin(Soggiorno)
         .filter(
             or_(
                 Camera.data_rimozione.isnot(None),
@@ -281,8 +281,8 @@ def prenota_proprieta():
 
     id_camere_occupate = (
         db.session.query(Camera.id)
-        .join(occupazioni)
-        .join(Soggiorno)
+        .outerjoin(occupazioni)
+        .outerjoin(Soggiorno)
         .filter(
             Camera.id_proprieta == id_proprieta,
             or_(
