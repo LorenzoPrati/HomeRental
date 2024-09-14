@@ -6,7 +6,7 @@ E' necessario installare:
     pip install flask-login
     pip install flask-sqlalchemy
 
-Per lanciare il sito, bisogna avere attiva una connessione a un server MySql e creare un file `website/credentials.py` definendo le variabili.
+Per lanciare il sito, bisogna collegarsi a un server MySql configurando i parametri in un file `credentials.py` da creare dentro la cartella `website/`.
 
 Esempio di file `credentials.py`:
 
@@ -15,6 +15,6 @@ Esempio di file `credentials.py`:
     server="localhost"
     port="5000"
 
-**Il nome del database deve essere `orm_code_first`.**
+Il database MySql deve essere stato **già creato vuoto** con il nome `orm_code_first`.
 
 Infine lanciare `main.py`.
