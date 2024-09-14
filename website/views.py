@@ -598,7 +598,7 @@ def aggiungi_proprieta():
                     telefono=telefono,
                 )
                 if biografia:
-                    proprietario.biografia
+                    proprietario.biografia = biografia
                 proprietario.metodo_accredito = metodo_pagamento
                 proprietario.utente = current_user
 
@@ -809,6 +809,7 @@ def migliori_host():
 
     proprietari = (
         db.session.query(Proprietario)
+        .filter(Proprietario.num_valutazioni > 0)
         .order_by(
             (
                 (Proprietario.valutazione_media * Proprietario.num_valutazioni)
@@ -864,6 +865,7 @@ def migliori_citta():
             func.sum(Proprieta.num_valutazioni).label("num_valutazioni"),
         )
         .select_from(Proprieta)
+        .where(Proprieta.num_valutazioni > 0)
         .group_by(Proprieta.id_citta)
         .cte("medie_citta")
     )
