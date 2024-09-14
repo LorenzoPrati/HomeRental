@@ -847,7 +847,7 @@ def citta_popolari():
             Soggiorno.check_in >= start_date,
             Soggiorno.check_out <= end_date,
         )
-        .group_by(Proprieta.id)
+        .group_by(Proprieta.id_citta)
         .order_by(func.count(func.distinct(Soggiorno.id)).desc())
         .limit(5)
     )
