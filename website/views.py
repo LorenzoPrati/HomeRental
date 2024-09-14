@@ -863,7 +863,6 @@ def migliori_citta():
             func.avg(Proprieta.valutazione_media).label("media_citta"),
             func.sum(Proprieta.num_valutazioni).label("num_valutazioni"),
         )
-        .where(Proprieta.data_rimozione.is_(None))
         .select_from(Proprieta)
         .group_by(Proprieta.id_citta)
         .cte("medie_citta")
@@ -901,9 +900,7 @@ def amenita_apprezzate():
         db.session.query(Amenita)
         .join(Amenita.proprieta)
         .filter(
-            Proprieta.data_rimozione.is_(None),
             Proprieta.valutazione_media >= 4.5,
-            Proprieta.num_valutazioni >= 1,
         )
         .group_by(Amenita.nome)
         .order_by(func.count().desc())
