@@ -148,7 +148,6 @@ def ricerca():
                 Proprieta.id_proprietario != current_user.id,
                 Proprieta.id_citta.in_(citta),
                 Proprieta.id_tipo_struttura.in_(tipi_struttura),
-                Proprieta.data_rimozione.is_(None),
                 servizi.c.id_amenita.in_(amenita),
             )
             .group_by(Proprieta.id)
